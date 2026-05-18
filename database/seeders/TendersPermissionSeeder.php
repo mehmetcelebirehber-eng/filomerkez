@@ -10,10 +10,10 @@ class TendersPermissionSeeder extends Seeder
     public function run()
     {
         $permissions = [
-            ['key' => 'tenders.view', 'name' => 'İhaleleri Görüntüleme', 'module' => 'tenders'],
-            ['key' => 'tenders.create', 'name' => 'İhale Ekleme', 'module' => 'tenders'],
-            ['key' => 'tenders.edit', 'name' => 'İhale Düzenleme', 'module' => 'tenders'],
-            ['key' => 'tenders.delete', 'name' => 'İhale Silme', 'module' => 'tenders'],
+            ['key' => 'tenders.view', 'label' => 'İhaleleri Görüntüleme'],
+            ['key' => 'tenders.create', 'label' => 'İhale Ekleme'],
+            ['key' => 'tenders.edit', 'label' => 'İhale Düzenleme'],
+            ['key' => 'tenders.delete', 'label' => 'İhale Silme'],
         ];
 
         foreach ($permissions as $perm) {

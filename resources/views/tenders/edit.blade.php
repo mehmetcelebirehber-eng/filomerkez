@@ -7,7 +7,7 @@
         <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div class="flex items-center gap-4">
                 <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white shadow-xl shadow-blue-500/20 ring-1 ring-black/5">
-                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Open%20Folder.png" alt="Folder" class="h-8 w-8 drop-shadow-md animate-bounce-slow" />
+                    <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/File%20Folder.png" alt="Folder" class="h-8 w-8 drop-shadow-md animate-bounce-slow" />
                 </div>
                 <div>
                     <h1 class="text-2xl font-black tracking-tight text-slate-900">İhale Dosyası Düzenle</h1>

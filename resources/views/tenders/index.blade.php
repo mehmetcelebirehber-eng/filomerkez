@@ -6,7 +6,7 @@
     <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div class="flex items-center gap-4">
             <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white shadow-xl shadow-indigo-500/20 ring-1 ring-black/5">
-                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Open%20Folder.png" alt="Tenders" class="h-10 w-10 drop-shadow-md animate-bounce-slow" />
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/File%20Folder.png" alt="Tenders" class="h-10 w-10 drop-shadow-md animate-bounce-slow" />
             </div>
             <div>
                 <h1 class="text-3xl font-black tracking-tight text-slate-900">İhale Dosyaları</h1>
@@ -78,7 +78,7 @@
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center justify-end gap-2">
                                     <a href="{{ route('tenders.show', $tender->id) }}" class="group/btn flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-all hover:bg-blue-100 hover:scale-110" title="Detay / Kayıtlar">
-                                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Eyes.png" alt="Detail" class="h-5 w-5 drop-shadow-sm transition-transform group-hover/btn:scale-110" />
+                                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Body%20parts/Eyes.png" alt="Detail" class="h-5 w-5 drop-shadow-sm transition-transform group-hover/btn:scale-110" />
                                     </a>
                                     
                                     @if(auth()->user()->hasPermission('tenders.edit'))

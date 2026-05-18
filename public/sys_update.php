@@ -18,10 +18,6 @@ $response = $kernel->handle(
 try {
     echo "<h1>Sistem Guncelleme Araci</h1>";
     
-    echo "<li>Git üzerinden güncel kodlar çekiliyor...</li>";
-    $gitOutput = shell_exec('git pull origin main 2>&1');
-    echo "<pre style='background:#f4f4f4; padding:10px; font-size:12px;'>" . htmlspecialchars($gitOutput) . "</pre>";
-
     if (function_exists('opcache_reset')) {
         opcache_reset();
         echo "<li>PHP Opcache temizlendi.</li>";

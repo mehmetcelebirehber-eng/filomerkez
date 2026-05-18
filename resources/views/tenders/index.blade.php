@@ -61,8 +61,8 @@
                         <tr class="group hover:bg-slate-50/50 transition-colors duration-200">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 ring-1 ring-blue-100">
-                                        <i class="fi fi-rr-building text-lg"></i>
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 ring-1 ring-slate-100/50">
+                                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Classical%20Building.png" alt="Building" class="h-6 w-6 drop-shadow-sm" />
                                     </div>
                                     <span class="font-bold text-slate-900 text-base">{{ $tender->institution_name }}</span>
                                 </div>
@@ -78,7 +78,7 @@
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center justify-end gap-2">
                                     <a href="{{ route('tenders.show', $tender->id) }}" class="group/btn flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-all hover:bg-blue-100 hover:scale-110" title="Detay / Kayıtlar">
-                                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Body%20parts/Eyes.png" alt="Detail" class="h-5 w-5 drop-shadow-sm transition-transform group-hover/btn:scale-110" />
+                                        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Magnifying%20Glass%20Tilted%20Right.png" alt="Detail" class="h-5 w-5 drop-shadow-sm transition-transform group-hover/btn:scale-110" />
                                     </a>
                                     
                                     @if(auth()->user()->hasPermission('tenders.edit'))

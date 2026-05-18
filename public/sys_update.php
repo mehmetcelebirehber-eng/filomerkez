@@ -21,6 +21,11 @@ try {
     echo "<li>Git üzerinden güncel kodlar çekiliyor...</li>";
     $gitOutput = shell_exec('git pull origin main 2>&1');
     echo "<pre style='background:#f4f4f4; padding:10px; font-size:12px;'>" . htmlspecialchars($gitOutput) . "</pre>";
+
+    if (function_exists('opcache_reset')) {
+        opcache_reset();
+        echo "<li>PHP Opcache temizlendi.</li>";
+    }
     
     echo "<li>Onbellek temizleniyor...</li>";
     Artisan::call('optimize:clear');

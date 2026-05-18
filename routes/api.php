@@ -153,6 +153,10 @@ Route::prefix('v1')->middleware(['auth:sanctum', \App\Http\Middleware\CheckCompa
     Route::put('/tenders/{id}', [\App\Http\Controllers\Api\V1\TenderApiController::class, 'update']);
     Route::delete('/tenders/{id}', [\App\Http\Controllers\Api\V1\TenderApiController::class, 'destroy']);
     
+    Route::post('/tenders/{id}/records', [\App\Http\Controllers\Api\V1\TenderApiController::class, 'storeRecord']);
+    Route::put('/tenders/{id}/records/{recordId}', [\App\Http\Controllers\Api\V1\TenderApiController::class, 'updateRecord']);
+    Route::delete('/tenders/{id}/records/{recordId}', [\App\Http\Controllers\Api\V1\TenderApiController::class, 'destroyRecord']);
+    
     Route::get('/contracts', [\App\Http\Controllers\Api\V1\ContractApiController::class, 'index']);
     Route::post('/contracts', [\App\Http\Controllers\Api\V1\ContractApiController::class, 'store']);
     Route::post('/contracts/{id}', [\App\Http\Controllers\Api\V1\ContractApiController::class, 'update']);

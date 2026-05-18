@@ -14,19 +14,11 @@ class TenderController extends Controller
             abort(403, 'Bu sayfayı görüntüleme yetkiniz yok.');
         }
 
-        $query = Tender::orderBy('tender_date', 'desc');
+        $query = Tender::withCount('records')->orderBy('created_at', 'desc');
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('institution_name', 'like', "%{$search}%")
-                  ->orWhere('tender_registration_number', 'like', "%{$search}%")
-                  ->orWhere('winning_company', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('year')) {
-            $query->whereYear('tender_date', $request->year);
+            $query->where('institution_name', 'like', "%{$search}%");
         }
 
         $tenders = $query->paginate(15);
@@ -51,28 +43,23 @@ class TenderController extends Controller
 
         $validated = $request->validate([
             'institution_name' => 'required|string|max:255',
-            'tender_date' => 'required|date',
-            'tender_registration_number' => 'nullable|string|max:255',
-            'vehicle_details' => 'nullable|string',
-            'duration_days' => 'nullable|integer',
-            'approximate_cost' => 'nullable|numeric',
-            'our_bid' => 'nullable|numeric',
-            'winning_company' => 'nullable|string|max:255',
-            'winning_amount' => 'nullable|numeric',
-            'status' => 'required|in:Değerlendirmede,Kazanıldı,Kaybedildi,İptal',
-            'document' => 'nullable|file|max:20480',
-            'notes' => 'nullable|string'
+            'vehicle_details' => 'nullable|string'
         ]);
 
-        if ($request->hasFile('document')) {
-            $validated['document_path'] = $request->file('document')->store('tenders', 'public');
-        }
-
         $validated['company_id'] = auth()->user()->company_id;
-
         $tender = Tender::create($validated);
 
-        return redirect()->route('tenders.index')->with('success', 'İhale kaydı başarıyla oluşturuldu.');
+        return redirect()->route('tenders.index')->with('success', 'İhale dosyası başarıyla oluşturuldu.');
+    }
+
+    public function show(Tender $tender)
+    {
+        if (!auth()->user()->hasPermission('tenders.view')) {
+            abort(403, 'Bu sayfayı görüntüleme yetkiniz yok.');
+        }
+
+        $records = $tender->records()->orderBy('tender_date', 'desc')->get();
+        return view('tenders.show', compact('tender', 'records'));
     }
 
     public function edit(Tender $tender)
@@ -92,29 +79,11 @@ class TenderController extends Controller
 
         $validated = $request->validate([
             'institution_name' => 'required|string|max:255',
-            'tender_date' => 'required|date',
-            'tender_registration_number' => 'nullable|string|max:255',
-            'vehicle_details' => 'nullable|string',
-            'duration_days' => 'nullable|integer',
-            'approximate_cost' => 'nullable|numeric',
-            'our_bid' => 'nullable|numeric',
-            'winning_company' => 'nullable|string|max:255',
-            'winning_amount' => 'nullable|numeric',
-            'status' => 'required|in:Değerlendirmede,Kazanıldı,Kaybedildi,İptal',
-            'document' => 'nullable|file|max:20480',
-            'notes' => 'nullable|string'
+            'vehicle_details' => 'nullable|string'
         ]);
 
-        if ($request->hasFile('document')) {
-            if ($tender->document_path && Storage::disk('public')->exists($tender->document_path)) {
-                Storage::disk('public')->delete($tender->document_path);
-            }
-            $validated['document_path'] = $request->file('document')->store('tenders', 'public');
-        }
-
         $tender->update($validated);
-
-        return redirect()->route('tenders.index')->with('success', 'İhale başarıyla güncellendi.');
+        return redirect()->route('tenders.index')->with('success', 'İhale dosyası güncellendi.');
     }
 
     public function destroy(Tender $tender)
@@ -123,12 +92,13 @@ class TenderController extends Controller
             abort(403, 'İhale silme yetkiniz yok.');
         }
 
-        if ($tender->document_path && Storage::disk('public')->exists($tender->document_path)) {
-            Storage::disk('public')->delete($tender->document_path);
+        foreach($tender->records as $record) {
+            if ($record->document_path && Storage::disk('public')->exists($record->document_path)) {
+                Storage::disk('public')->delete($record->document_path);
+            }
         }
-
         $tender->delete();
 
-        return redirect()->route('tenders.index')->with('success', 'İhale başarıyla silindi.');
+        return redirect()->route('tenders.index')->with('success', 'İhale dosyası başarıyla silindi.');
     }
 }

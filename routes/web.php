@@ -660,6 +660,9 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::resource('tenders', \App\Http\Controllers\TenderController::class);
+    Route::post('tenders/{tender}/records', [\App\Http\Controllers\TenderRecordController::class, 'store'])->name('tenders.records.store');
+    Route::put('tenders/{tender}/records/{record}', [\App\Http\Controllers\TenderRecordController::class, 'update'])->name('tenders.records.update');
+    Route::delete('tenders/{tender}/records/{record}', [\App\Http\Controllers\TenderRecordController::class, 'destroy'])->name('tenders.records.destroy');
 
     /*
     |--------------------------------------------------------------------------

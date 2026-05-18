@@ -4,51 +4,46 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tender;
+use App\Models\TenderRecord;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class TenderApiController extends Controller
 {
+    /* ==============================
+       TENDER (FOLDER) ENDPOINTS
+       ============================== */
+
     public function index(Request $request)
     {
         if (!auth()->user()->hasPermission('tenders.view')) {
             return response()->json(['success' => false, 'message' => 'Yetkiniz yok.'], 403);
         }
 
-        $query = Tender::orderBy('tender_date', 'desc');
+        $query = Tender::withCount('records')->orderBy('created_at', 'desc');
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('institution_name', 'like', "%{$search}%")
-                  ->orWhere('tender_registration_number', 'like', "%{$search}%")
-                  ->orWhere('winning_company', 'like', "%{$search}%");
-            });
+            $query->where('institution_name', 'like', "%{$search}%");
         }
 
-        if ($request->filled('year')) {
-            $query->whereYear('tender_date', $request->year);
-        }
+        $tenders = $query->get();
 
-        $tenders = $query->get()->map(function ($tender) {
-            $tender->file_url = $tender->document_path ? url('storage/' . $tender->document_path) : null;
-            return $tender;
-        });
-
-        // Summary Statistics
-        $total = $tenders->count();
-        $won = $tenders->where('status', 'Kazanıldı')->count();
-        $lost = $tenders->where('status', 'Kaybedildi')->count();
-        $evaluating = $tenders->where('status', 'Değerlendirmede')->count();
+        // Calculate overall stats from all records of this company
+        $companyId = auth()->user()->company_id;
+        $totalRecords = TenderRecord::whereHas('tender', fn($q) => $q->where('company_id', $companyId))->count();
+        $wonRecords = TenderRecord::whereHas('tender', fn($q) => $q->where('company_id', $companyId))->where('status', 'Kazanıldı')->count();
+        $lostRecords = TenderRecord::whereHas('tender', fn($q) => $q->where('company_id', $companyId))->where('status', 'Kaybedildi')->count();
+        $evalRecords = TenderRecord::whereHas('tender', fn($q) => $q->where('company_id', $companyId))->where('status', 'Değerlendirmede')->count();
 
         return response()->json([
             'success' => true,
             'data' => $tenders,
             'stats' => [
-                'total' => $total,
-                'won' => $won,
-                'lost' => $lost,
-                'evaluating' => $evaluating
+                'total' => $totalRecords,
+                'won' => $wonRecords,
+                'lost' => $lostRecords,
+                'evaluating' => $evalRecords
             ]
         ]);
     }
@@ -59,8 +54,15 @@ class TenderApiController extends Controller
             return response()->json(['success' => false, 'message' => 'Yetkiniz yok.'], 403);
         }
 
-        $tender = Tender::findOrFail($id);
-        $tender->file_url = $tender->document_path ? url('storage/' . $tender->document_path) : null;
+        $tender = Tender::with(['records' => function($q) {
+            $q->orderBy('tender_date', 'desc');
+        }])->findOrFail($id);
+
+        // Add file url to records
+        $tender->records->transform(function ($record) {
+            $record->file_url = $record->document_path ? url('storage/' . $record->document_path) : null;
+            return $record;
+        });
 
         return response()->json(['success' => true, 'data' => $tender]);
     }
@@ -73,9 +75,67 @@ class TenderApiController extends Controller
 
         $validated = $request->validate([
             'institution_name' => 'required|string|max:255',
+            'vehicle_details' => 'nullable|string'
+        ]);
+
+        $validated['company_id'] = auth()->user()->company_id;
+
+        $tender = Tender::create($validated);
+
+        return response()->json(['success' => true, 'message' => 'İhale dosyası oluşturuldu.', 'data' => $tender]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        if (!auth()->user()->hasPermission('tenders.edit')) {
+            return response()->json(['success' => false, 'message' => 'Yetkiniz yok.'], 403);
+        }
+
+        $tender = Tender::findOrFail($id);
+
+        $validated = $request->validate([
+            'institution_name' => 'sometimes|required|string|max:255',
+            'vehicle_details' => 'nullable|string'
+        ]);
+
+        $tender->update($validated);
+
+        return response()->json(['success' => true, 'message' => 'İhale dosyası güncellendi.', 'data' => $tender]);
+    }
+
+    public function destroy($id)
+    {
+        if (!auth()->user()->hasPermission('tenders.delete')) {
+            return response()->json(['success' => false, 'message' => 'Yetkiniz yok.'], 403);
+        }
+
+        $tender = Tender::findOrFail($id);
+
+        foreach($tender->records as $record) {
+            if ($record->document_path && Storage::disk('public')->exists($record->document_path)) {
+                Storage::disk('public')->delete($record->document_path);
+            }
+        }
+        $tender->delete();
+
+        return response()->json(['success' => true, 'message' => 'İhale dosyası silindi.']);
+    }
+
+    /* ==============================
+       TENDER RECORDS ENDPOINTS
+       ============================== */
+
+    public function storeRecord(Request $request, $tenderId)
+    {
+        if (!auth()->user()->hasPermission('tenders.create')) {
+            return response()->json(['success' => false, 'message' => 'Yetkiniz yok.'], 403);
+        }
+
+        $tender = Tender::findOrFail($tenderId);
+
+        $validated = $request->validate([
             'tender_date' => 'required|date',
             'tender_registration_number' => 'nullable|string|max:255',
-            'vehicle_details' => 'nullable|string',
             'duration_days' => 'nullable|integer',
             'approximate_cost' => 'nullable|numeric',
             'our_bid' => 'nullable|numeric',
@@ -90,27 +150,24 @@ class TenderApiController extends Controller
             $validated['document_path'] = $request->file('document')->store('tenders', 'public');
         }
 
-        $validated['company_id'] = auth()->user()->company_id;
+        $record = $tender->records()->create($validated);
+        $record->file_url = $record->document_path ? url('storage/' . $record->document_path) : null;
 
-        $tender = Tender::create($validated);
-        $tender->file_url = $tender->document_path ? url('storage/' . $tender->document_path) : null;
-
-        return response()->json(['success' => true, 'message' => 'İhale kaydedildi.', 'data' => $tender]);
+        return response()->json(['success' => true, 'message' => 'Geçmiş kayıt eklendi.', 'data' => $record]);
     }
 
-    public function update(Request $request, $id)
+    public function updateRecord(Request $request, $tenderId, $recordId)
     {
         if (!auth()->user()->hasPermission('tenders.edit')) {
             return response()->json(['success' => false, 'message' => 'Yetkiniz yok.'], 403);
         }
 
-        $tender = Tender::findOrFail($id);
+        $tender = Tender::findOrFail($tenderId);
+        $record = $tender->records()->findOrFail($recordId);
 
         $validated = $request->validate([
-            'institution_name' => 'sometimes|required|string|max:255',
             'tender_date' => 'sometimes|required|date',
             'tender_registration_number' => 'nullable|string|max:255',
-            'vehicle_details' => 'nullable|string',
             'duration_days' => 'nullable|integer',
             'approximate_cost' => 'nullable|numeric',
             'our_bid' => 'nullable|numeric',
@@ -122,32 +179,33 @@ class TenderApiController extends Controller
         ]);
 
         if ($request->hasFile('document')) {
-            if ($tender->document_path && Storage::disk('public')->exists($tender->document_path)) {
-                Storage::disk('public')->delete($tender->document_path);
+            if ($record->document_path && Storage::disk('public')->exists($record->document_path)) {
+                Storage::disk('public')->delete($record->document_path);
             }
             $validated['document_path'] = $request->file('document')->store('tenders', 'public');
         }
 
-        $tender->update($validated);
-        $tender->file_url = $tender->document_path ? url('storage/' . $tender->document_path) : null;
+        $record->update($validated);
+        $record->file_url = $record->document_path ? url('storage/' . $record->document_path) : null;
 
-        return response()->json(['success' => true, 'message' => 'İhale güncellendi.', 'data' => $tender]);
+        return response()->json(['success' => true, 'message' => 'Geçmiş kayıt güncellendi.', 'data' => $record]);
     }
 
-    public function destroy($id)
+    public function destroyRecord($tenderId, $recordId)
     {
         if (!auth()->user()->hasPermission('tenders.delete')) {
             return response()->json(['success' => false, 'message' => 'Yetkiniz yok.'], 403);
         }
 
-        $tender = Tender::findOrFail($id);
+        $tender = Tender::findOrFail($tenderId);
+        $record = $tender->records()->findOrFail($recordId);
 
-        if ($tender->document_path && Storage::disk('public')->exists($tender->document_path)) {
-            Storage::disk('public')->delete($tender->document_path);
+        if ($record->document_path && Storage::disk('public')->exists($record->document_path)) {
+            Storage::disk('public')->delete($record->document_path);
         }
 
-        $tender->delete();
+        $record->delete();
 
-        return response()->json(['success' => true, 'message' => 'İhale silindi.']);
+        return response()->json(['success' => true, 'message' => 'Geçmiş kayıt silindi.']);
     }
 }

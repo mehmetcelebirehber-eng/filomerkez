@@ -125,6 +125,43 @@ class TenderApiController extends Controller
        TENDER RECORDS ENDPOINTS
        ============================== */
 
+    private function validateRecord(Request $request)
+    {
+        $validated = $request->validate([
+            'tender_date' => 'sometimes|required|date',
+            'tender_registration_number' => 'nullable|string|max:255',
+            'duration_days' => 'nullable|integer',
+            
+            'total_vehicles' => 'nullable|integer',
+            'minibus_count' => 'nullable|integer',
+            'midibus_count' => 'nullable|integer',
+            'bus_count' => 'nullable|integer',
+            'taxi_count' => 'nullable|integer',
+            'vehicle_model_requirement' => 'nullable|string|max:255',
+            
+            'approximate_cost' => 'nullable|numeric',
+            'our_bid' => 'nullable|numeric',
+            
+            'bids' => 'nullable|array',
+            'bids.*.company_name' => 'required_with:bids|string',
+            'bids.*.bid_amount' => 'required_with:bids|numeric',
+            
+            'winning_company' => 'nullable|string|max:255',
+            'winning_amount' => 'nullable|numeric',
+            'winning_unit_price' => 'nullable|numeric',
+            
+            'status' => 'sometimes|required|in:Değerlendirmede,Kazanıldı,Kaybedildi,İptal',
+            'document' => 'nullable|file|max:20480',
+            'notes' => 'nullable|string'
+        ]);
+
+        if (isset($validated['bids'])) {
+            $validated['bids'] = array_values($validated['bids']);
+        }
+
+        return $validated;
+    }
+
     public function storeRecord(Request $request, $tenderId)
     {
         if (!auth()->user()->hasPermission('tenders.create')) {
@@ -133,18 +170,7 @@ class TenderApiController extends Controller
 
         $tender = Tender::findOrFail($tenderId);
 
-        $validated = $request->validate([
-            'tender_date' => 'required|date',
-            'tender_registration_number' => 'nullable|string|max:255',
-            'duration_days' => 'nullable|integer',
-            'approximate_cost' => 'nullable|numeric',
-            'our_bid' => 'nullable|numeric',
-            'winning_company' => 'nullable|string|max:255',
-            'winning_amount' => 'nullable|numeric',
-            'status' => 'required|in:Değerlendirmede,Kazanıldı,Kaybedildi,İptal',
-            'document' => 'nullable|file|max:20480',
-            'notes' => 'nullable|string'
-        ]);
+        $validated = $this->validateRecord($request);
 
         if ($request->hasFile('document')) {
             $validated['document_path'] = $request->file('document')->store('tenders', 'public');
@@ -165,18 +191,7 @@ class TenderApiController extends Controller
         $tender = Tender::findOrFail($tenderId);
         $record = $tender->records()->findOrFail($recordId);
 
-        $validated = $request->validate([
-            'tender_date' => 'sometimes|required|date',
-            'tender_registration_number' => 'nullable|string|max:255',
-            'duration_days' => 'nullable|integer',
-            'approximate_cost' => 'nullable|numeric',
-            'our_bid' => 'nullable|numeric',
-            'winning_company' => 'nullable|string|max:255',
-            'winning_amount' => 'nullable|numeric',
-            'status' => 'sometimes|required|in:Değerlendirmede,Kazanıldı,Kaybedildi,İptal',
-            'document' => 'nullable|file|max:20480',
-            'notes' => 'nullable|string'
-        ]);
+        $validated = $this->validateRecord($request);
 
         if ($request->hasFile('document')) {
             if ($record->document_path && Storage::disk('public')->exists($record->document_path)) {

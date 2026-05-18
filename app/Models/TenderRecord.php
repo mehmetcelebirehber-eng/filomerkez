@@ -16,11 +16,21 @@ class TenderRecord extends Model
         'tender_date',
         'tender_registration_number',
         'duration_days',
+        
+        'total_vehicles',
+        'minibus_count',
+        'midibus_count',
+        'bus_count',
+        'taxi_count',
+        'vehicle_model_requirement',
+        
         'approximate_cost',
         'our_bid',
         'winning_company',
         'winning_amount',
+        'winning_unit_price',
         'status',
+        'bids',
         'document_path',
         'notes',
     ];
@@ -30,6 +40,8 @@ class TenderRecord extends Model
         'approximate_cost' => 'decimal:2',
         'our_bid' => 'decimal:2',
         'winning_amount' => 'decimal:2',
+        'winning_unit_price' => 'decimal:2',
+        'bids' => 'array',
     ];
 
     public function tender()

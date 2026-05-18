@@ -147,6 +147,7 @@ Route::prefix('v1')->middleware(['auth:sanctum', \App\Http\Middleware\CheckCompa
     Route::post('/company-documents/bulk-delete', [\App\Http\Controllers\Api\V1\CompanyDocumentApiController::class, 'bulkDelete']);
     Route::get('/company-documents/download-zip', [\App\Http\Controllers\Api\V1\CompanyDocumentApiController::class, 'downloadZip']);
 
+    Route::apiResource('tenders', \App\Http\Controllers\Api\V1\TenderApiController::class);
     
     Route::get('/contracts', [\App\Http\Controllers\Api\V1\ContractApiController::class, 'index']);
     Route::post('/contracts', [\App\Http\Controllers\Api\V1\ContractApiController::class, 'store']);

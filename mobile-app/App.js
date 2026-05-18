@@ -45,6 +45,8 @@ import CompanyUsersScreen from './src/screens/CompanyUsersScreen';
 import CompanyUserFormScreen from './src/screens/CompanyUserFormScreen';
 import ReportsScreen from './src/screens/ReportsScreen';
 import CompanyDocumentsScreen from './src/screens/CompanyDocumentsScreen';
+import TendersScreen from './src/screens/TendersScreen';
+import TenderFormScreen from './src/screens/TenderFormScreen';
 import PayrollScreen from './src/screens/PayrollScreen';
 import PayrollDetailScreen from './src/screens/PayrollDetailScreen';
 import FinanceScreen from './src/screens/FinanceScreen';
@@ -250,6 +252,8 @@ function MenuStackScreen() {
             <MenuStack.Screen name="TripDetail" component={TripDetailScreen} />
             <MenuStack.Screen name="Reports" component={ReportsScreen} />
             <MenuStack.Screen name="CompanyDocuments" component={CompanyDocumentsScreen} />
+            <MenuStack.Screen name="Tenders" component={TendersScreen} />
+            <MenuStack.Screen name="TenderForm" component={TenderFormScreen} />
             <MenuStack.Screen name="Payrolls" component={PayrollScreen} />
             <MenuStack.Screen name="PayrollDetail" component={PayrollDetailScreen} />
             <MenuStack.Screen name="Finance" component={FinanceScreen} />

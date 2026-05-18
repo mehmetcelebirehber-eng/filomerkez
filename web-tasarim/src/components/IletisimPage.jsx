@@ -96,98 +96,31 @@ export default function IletisimPage() {
         flexDirection: 'column',
         justifyContent: 'center'
       }}>
-        <div style={{ maxWidth: '600px', margin: '0 auto', width: '100%' }}>
-          <h3 style={{ fontSize: '2.5rem', marginBottom: '40px', color: 'var(--color-text-primary)', fontFamily: 'var(--font-heading)' }}>
-            Hemen Teklif Alın
+        <div style={{ width: '100%', height: '100%', minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
+          <h3 style={{ fontSize: '2.5rem', marginBottom: '20px', color: 'var(--color-text-primary)', fontFamily: 'var(--font-heading)' }}>
+            Konumumuz
           </h3>
           
-          <AnimatePresence mode="wait">
-            {!isSubmitted ? (
-              <motion.form 
-                key="form"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                onSubmit={handleSubmit}
-                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}
-              >
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label className="label">Adınız Soyadınız / Kurum Adı</label>
-                  <input type="text" className="input-field" placeholder="İsminiz" required style={{ background: 'white' }} />
-                </div>
-                
-                <div>
-                  <label className="label">Telefon Numarası</label>
-                  <input type="tel" className="input-field" placeholder="05XX XXX XX XX" required style={{ background: 'white' }} />
-                </div>
-                
-                <div>
-                  <label className="label">Hizmet Türü</label>
-                  <select className="input-field" required style={{ background: 'white', appearance: 'none' }}>
-                    <option value="">Seçiniz...</option>
-                    <option value="personel">Personel Taşımacılığı</option>
-                    <option value="ogrenci">Öğrenci Servis Taşımacılığı</option>
-                    <option value="turizm">Turizm ve Gezi Taşımacılığı</option>
-                    <option value="vip">VIP Transfer</option>
-                    <option value="kiralama">Araç Kiralama</option>
-                  </select>
-                </div>
-                
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label className="label">Mesajınız / Talebiniz</label>
-                  <textarea 
-                    className="input-field" 
-                    rows="4" 
-                    placeholder="Güzergah, kişi sayısı veya özel taleplerinizi belirtebilirsiniz..." 
-                    style={{ background: 'white', resize: 'vertical' }}
-                  ></textarea>
-                </div>
-                
-                <div style={{ gridColumn: '1 / -1', marginTop: '10px' }}>
-                  <button 
-                    type="submit" 
-                    className="btn-3d-premium" 
-                    style={{ 
-                      width: '100%', 
-                      padding: '16px', 
-                      fontSize: '1.2rem', 
-                      borderRadius: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '12px'
-                    }}
-                  >
-                    <span>Gönder</span> <Send size={20} style={{ position: 'relative', zIndex: 2 }} />
-                  </button>
-                </div>
-              </motion.form>
-            ) : (
-              <motion.div 
-                key="success"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                style={{ 
-                  height: '100%', display: 'flex', flexDirection: 'column', 
-                  alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-                  color: 'var(--color-text-primary)',
-                  padding: '60px 0'
-                }}
-              >
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                >
-                  <CheckCircle2 size={100} color="#10b981" style={{ marginBottom: '24px' }} />
-                </motion.div>
-                <h3 style={{ fontSize: '2.5rem', marginBottom: '16px', fontFamily: 'var(--font-heading)' }}>Talebiniz Alındı!</h3>
-                <p style={{ fontSize: '1.2rem', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-                  Müşteri temsilcilerimiz en kısa sürede sizinle iletişime geçerek detaylı fiyat teklifimizi sunacaktır.
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div style={{ 
+            flex: 1,
+            width: '100%', 
+            borderRadius: '24px', 
+            overflow: 'hidden', 
+            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+            border: '6px solid white',
+            position: 'relative'
+          }}>
+            <iframe 
+              src="https://maps.google.com/maps?q=Mehmet%20%C3%87elebi%20Turizm%2C%20Fevzi%C3%A7akmak%20Mah.%2010591.%20Sk%20No%3A26%2FA%2C%20Karatay%20Konya&t=&z=19&ie=UTF8&iwloc=&output=embed" 
+              width="100%" 
+              height="100%" 
+              style={{ border: 0, filter: 'contrast(1.1) saturation(1.1)' }} 
+              allowFullScreen="" 
+              loading="lazy" 
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Mehmet Çelebi Turizm Konum"
+            ></iframe>
+          </div>
         </div>
       </div>
     </motion.div>

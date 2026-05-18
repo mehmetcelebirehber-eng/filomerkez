@@ -140,6 +140,14 @@ Route::prefix('v1')->middleware(['auth:sanctum', \App\Http\Middleware\CheckCompa
     Route::post('/documents/{id}', [\App\Http\Controllers\Api\V1\DocumentApiController::class, 'update']); // Since we might use FormData for files, POST is safer with _method=PUT
     Route::delete('/documents/{id}', [\App\Http\Controllers\Api\V1\DocumentApiController::class, 'destroy']);
     
+    // Company Documents
+    Route::get('/company-documents', [\App\Http\Controllers\Api\V1\CompanyDocumentApiController::class, 'index']);
+    Route::post('/company-documents', [\App\Http\Controllers\Api\V1\CompanyDocumentApiController::class, 'store']);
+    Route::delete('/company-documents/{id}', [\App\Http\Controllers\Api\V1\CompanyDocumentApiController::class, 'destroy']);
+    Route::post('/company-documents/bulk-delete', [\App\Http\Controllers\Api\V1\CompanyDocumentApiController::class, 'bulkDelete']);
+    Route::get('/company-documents/download-zip', [\App\Http\Controllers\Api\V1\CompanyDocumentApiController::class, 'downloadZip']);
+
+    
     Route::get('/contracts', [\App\Http\Controllers\Api\V1\ContractApiController::class, 'index']);
     Route::post('/contracts', [\App\Http\Controllers\Api\V1\ContractApiController::class, 'store']);
     Route::post('/contracts/{id}', [\App\Http\Controllers\Api\V1\ContractApiController::class, 'update']);

@@ -12,7 +12,38 @@ const vehicles = [
 
 export default function AracFilomuz({ onVehicleClick }) {
   return (
-    <div id="filomuz" style={{ padding: '0 5% 100px', marginTop: '-40px', background: '#ffffff', position: 'relative', overflow: 'hidden' }}>
+    <div id="filomuz" style={{ padding: '0 5% 20px', marginTop: '-40px', background: '#ffffff', position: 'relative', overflow: 'hidden' }}>
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @media (max-width: 768px) {
+          .marquee-track {
+            gap: 20px !important;
+          }
+          .fleet-item {
+            flex: 0 0 280px;
+          }
+          .fleet-item img {
+            max-height: 120px !important;
+            object-fit: contain;
+          }
+          .fleet-item-container {
+            height: 180px !important;
+            margin-bottom: 10px !important;
+          }
+          .fleet-item-title {
+            font-size: 0.95rem !important;
+          }
+        }
+        @media (min-width: 769px) {
+          .marquee-track {
+            gap: 40px !important;
+          }
+          .fleet-item {
+            flex: 0 0 450px;
+          }
+        }
+      `}</style>
       
       {/* 3D Background Icons (Premium) */}
       <motion.div
@@ -37,82 +68,76 @@ export default function AracFilomuz({ onVehicleClick }) {
         <Star size={400} />
       </motion.div>
 
-      {/* Vehicles Grid */}
-      <div style={{ 
-        maxWidth: '1800px', 
-        margin: '0 auto', 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-        gap: '80px',
-        alignItems: 'end',
-        position: 'relative',
-        zIndex: 10
-      }}>
-        {vehicles.map((v, i) => (
-          <motion.div 
-            key={v.id}
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.15, duration: 0.7, type: 'spring' }}
-            whileHover="hover"
-            onClick={() => onVehicleClick && onVehicleClick(v.id)}
-            style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              cursor: 'pointer',
-              position: 'relative',
-              padding: '20px',
-              borderRadius: '24px',
-              transition: 'background 0.3s ease'
-            }}
-          >
-            {/* Hover State Background */}
-            <motion.div
-              style={{
-                position: 'absolute',
-                top: 0, left: 0, right: 0, bottom: 0,
-                background: 'radial-gradient(ellipse at bottom, rgba(16,84,156,0.05) 0%, transparent 70%)',
+      {/* Vehicles Infinite Marquee */}
+      <div style={{ width: '100%', overflow: 'hidden', position: 'relative', zIndex: 10, paddingBottom: '20px' }}>
+        <motion.div
+          className="marquee-track"
+          style={{ display: 'flex', width: 'max-content', gap: '30px', alignItems: 'flex-end', padding: '0 10px' }}
+          animate={{ x: ["-50%", "0%"] }}
+          transition={{ ease: "linear", duration: 25, repeat: Infinity }}
+        >
+          {[...vehicles, ...vehicles].map((v, i) => (
+            <motion.div 
+              key={`${v.id}-${i}`}
+              className="fleet-item"
+              whileHover="hover"
+              onClick={() => onVehicleClick && onVehicleClick(v.id)}
+              style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                cursor: 'pointer',
+                position: 'relative',
+                padding: '20px',
                 borderRadius: '24px',
-                opacity: 0,
-                zIndex: -1
+                transition: 'background 0.3s ease'
               }}
-              variants={{ hover: { opacity: 1, y: -15 } }}
-            />
+            >
+              {/* Hover State Background */}
+              <motion.div
+                style={{
+                  position: 'absolute',
+                  top: 0, left: 0, right: 0, bottom: 0,
+                  background: 'radial-gradient(ellipse at bottom, rgba(16,84,156,0.05) 0%, transparent 70%)',
+                  borderRadius: '24px',
+                  opacity: 0,
+                  zIndex: -1
+                }}
+                variants={{ hover: { opacity: 1, y: -15 } }}
+              />
 
-            {/* Image Container */}
-            <div style={{ 
-              width: '100%', 
-              height: '350px', 
-              display: 'flex', 
-              alignItems: 'flex-end', 
-              justifyContent: 'center',
-              marginBottom: '30px',
-              position: 'relative'
-            }}>
-              {/* Premium Shadow */}
-              <div style={{
-                position: 'absolute',
-                bottom: '-20px',
-                width: '85%',
-                height: '25px',
-                background: 'radial-gradient(ellipse, rgba(0,0,0,0.2) 0%, transparent 70%)',
-                filter: 'blur(8px)',
-                zIndex: 0
-              }}></div>
-              
-              <motion.img 
-                src={v.img} 
+              {/* Image Container */}
+              <div className="fleet-item-container" style={{ 
+                width: '100%', 
+                height: '350px', 
+                display: 'flex', 
+                alignItems: 'flex-end', 
+                justifyContent: 'center',
+                marginBottom: '30px',
+                position: 'relative'
+              }}>
+                {/* Premium Shadow */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: '-20px',
+                  width: '85%',
+                  height: '25px',
+                  background: 'radial-gradient(ellipse, rgba(0,0,0,0.2) 0%, transparent 70%)',
+                  filter: 'blur(8px)',
+                  zIndex: 0
+                }}></div>
+                
+                <motion.img 
+                  src={v.img} 
                 alt={v.name} 
                 variants={{
                   hover: { scale: 1.1, x: 25, y: -20, rotate: -3, filter: 'drop-shadow(0 30px 40px rgba(0,0,0,0.3))' }
                 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                 style={{ 
-                  width: '130%',
-                  maxWidth: 'none', 
-                  maxHeight: 'none', 
+                  width: '100%',
+                  maxWidth: '100%', 
+                  maxHeight: '100%', 
                   objectFit: 'contain',
                   position: 'relative',
                   zIndex: 1,
@@ -133,6 +158,7 @@ export default function AracFilomuz({ onVehicleClick }) {
               textAlign: 'center'
             }}>
               <motion.h3 
+                className="fleet-item-title"
                 variants={{ hover: { y: -5, color: '#e21b1b' } }}
                 transition={{ duration: 0.3 }}
                 style={{
@@ -147,6 +173,7 @@ export default function AracFilomuz({ onVehicleClick }) {
             </div>
           </motion.div>
         ))}
+        </motion.div>
       </div>
       
       {/* Bottom separator */}

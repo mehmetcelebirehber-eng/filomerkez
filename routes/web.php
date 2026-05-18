@@ -640,6 +640,22 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | COMPANY DOCUMENTS
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/company-documents/bulk-delete', [\App\Http\Controllers\CompanyDocumentController::class, 'bulkDelete'])
+        ->middleware('permission:company_documents.delete')
+        ->name('company-documents.bulk-delete');
+
+    Route::get('/company-documents/download-zip', [\App\Http\Controllers\CompanyDocumentController::class, 'downloadZip'])
+        ->middleware('permission:company_documents.view')
+        ->name('company-documents.zip');
+
+    Route::resource('company-documents', \App\Http\Controllers\CompanyDocumentController::class)
+        ->middleware('permission:company_documents.view');
+
+    /*
+    |--------------------------------------------------------------------------
     | REPORTS
     |--------------------------------------------------------------------------
     */

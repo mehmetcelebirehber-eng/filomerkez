@@ -12,8 +12,69 @@ const services = [
 
 export default function QuickServices({ activeIndex = 0, onServiceClick }) {
   return (
-    <div style={{ position: 'relative', zIndex: 20, width: '100%', padding: '0 5%', marginTop: '-55px' }}>
+    <div className="quick-services-wrapper" style={{ position: 'relative', zIndex: 20, width: '100%', padding: '0 2%' }}>
+      <style>{`
+        .quick-services-wrapper {
+          margin-top: -55px;
+        }
+        .service-title {
+          font-size: 1.1rem;
+          font-weight: 800;
+          line-height: 1.3;
+          text-align: center;
+          margin-top: 25px;
+          font-family: var(--font-heading), 'Inter', sans-serif;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .service-icon-wrapper {
+          position: absolute;
+          top: -32px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 64px;
+          height: 64px;
+          border-radius: 50%;
+          border: 4px solid #FFF;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+          transition: all 0.3s ease;
+        }
+        .service-item {
+          flex: 1;
+          height: 110px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .service-item:hover .service-icon-wrapper {
+          transform: translateX(-50%) translateY(-5px);
+        }
+        
+        /* Desktop Rounding */
+        .service-item:first-child { border-top-left-radius: 55px; border-bottom-left-radius: 55px; }
+        .service-item:last-child { border-top-right-radius: 55px; border-bottom-right-radius: 55px; }
+        
+        @media (max-width: 768px) {
+          .quick-services-wrapper { margin-top: -22px !important; }
+          .services-bar { border-radius: 12px !important; box-shadow: 0 6px 12px rgba(0,0,0,0.08) !important; }
+          .service-item { height: 45px !important; }
+          .service-item:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+          .service-item:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+          .service-icon-wrapper { width: 26px !important; height: 26px !important; top: -13px !important; border-width: 2px !important; box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important; }
+          .service-icon-wrapper svg { width: 14px !important; height: 14px !important; }
+          .service-title { font-size: 0.42rem !important; margin-top: 8px !important; letter-spacing: -0.3px !important; font-weight: 800 !important; line-height: 1.1 !important; }
+        }
+      `}</style>
+      
       <motion.div 
+        className="services-bar"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
@@ -21,111 +82,43 @@ export default function QuickServices({ activeIndex = 0, onServiceClick }) {
           maxWidth: '1200px', 
           margin: '0 auto', 
           display: 'flex',
-          borderRadius: '100px',
-          boxShadow: '0 25px 50px rgba(0,0,0,0.25), 0 10px 20px rgba(16, 84, 156, 0.1)',
-          overflow: 'visible',
+          background: '#FFF',
+          borderRadius: '55px',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
           position: 'relative'
         }}
       >
         {services.map((service, index) => {
-          const isFirst = index === 0;
-          const isLast = index === services.length - 1;
           const isActive = index === activeIndex;
           
-          // Premium Red Gradient or Clean White
-          const bg = isActive 
-            ? 'linear-gradient(135deg, #e63946 0%, #a71d2a 100%)' 
-            : 'linear-gradient(135deg, #FFFFFF 0%, #f4f7fa 100%)';
-            
-          const textColor = isActive ? '#FFFFFF' : 'var(--color-accent)';
+          let bg = '#FFFFFF';
+          let textColor = '#0a3d75'; // Premium Dark Blue
+          let iconBg = 'linear-gradient(145deg, #146dc7, #0a3d75)'; // Logo Blue 3D gradient
+          let borderRight = index < services.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none';
           
-          // 3D Button Gradient for Icon
-          const iconCircleBg = isActive
-            ? 'linear-gradient(145deg, #ff4d5a, #c21927)'
-            : 'linear-gradient(145deg, #146dc7, #0a3d75)';
+          // If active, give it the premium red highlight
+          if (isActive) {
+            bg = 'linear-gradient(135deg, #e63946 0%, #a71d2a 100%)';
+            textColor = '#FFFFFF';
+            iconBg = '#e63946';
+            borderRight = 'none';
+          }
           
           return (
-            <motion.div 
+            <div 
               key={index}
               onClick={() => onServiceClick && onServiceClick(index)}
-              whileHover={{ y: -8, scale: 1.02 }}
-              style={{
-                flex: 1,
-                background: bg,
-                height: '110px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                borderTopLeftRadius: isFirst ? '100px' : '0',
-                borderBottomLeftRadius: isFirst ? '100px' : '0',
-                borderTopRightRadius: isLast ? '100px' : '0',
-                borderBottomRightRadius: isLast ? '100px' : '0',
-                paddingTop: '15px', 
-                cursor: 'pointer',
-                boxShadow: isActive ? 'inset 0 0 20px rgba(0,0,0,0.1)' : 'none',
-                zIndex: isActive ? 5 : 1
-              }}
+              className="service-item"
+              style={{ background: bg, borderRight: borderRight }}
             >
-              {/* 3D Premium Icon Circle Wrapper to prevent Framer Motion from overriding the centering transform */}
-              <div 
-                style={{
-                  position: 'absolute',
-                  top: '-40px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  zIndex: 2
-                }}
-              >
-                <motion.div 
-                  whileHover={{ rotateY: 180 }}
-                  transition={{ duration: 0.6, type: "spring" }}
-                  style={{
-                    width: '76px',
-                    height: '76px',
-                    borderRadius: '50%',
-                    background: iconCircleBg,
-                    border: '4px solid #FFFFFF',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    /* Extreme 3D Physical Button Shadows */
-                    boxShadow: `
-                      inset -4px -4px 8px rgba(0,0,0,0.4), 
-                      inset 4px 4px 8px rgba(255,255,255,0.4), 
-                      0 12px 20px rgba(0,0,0,0.2)
-                    `
-                  }}
-                >
-                  <service.icon 
-                    size={32} 
-                    color="#FFFFFF" 
-                    strokeWidth={2} 
-                    style={{ filter: 'drop-shadow(0 3px 3px rgba(0,0,0,0.5))' }}
-                  />
-                </motion.div>
+              <div className="service-icon-wrapper" style={{ background: iconBg }}>
+                <service.icon color="#FFFFFF" size={30} />
               </div>
-
-              {/* Title */}
-              <span 
-                style={{
-                  color: textColor,
-                  fontWeight: 800,
-                  fontSize: '0.9rem',
-                  lineHeight: '1.3',
-                  textAlign: 'center',
-                  fontFamily: 'var(--font-heading)',
-                  padding: '0 10px',
-                  textShadow: isActive ? '0 2px 4px rgba(0,0,0,0.4)' : 'none'
-                }}
-              >
-                {service.title.split(' ').map((word, i) => (
-                  <React.Fragment key={i}>
-                    {word} <br />
-                  </React.Fragment>
-                ))}
+              <span className="service-title" style={{ color: textColor }}>
+                {service.title.split(' ')[0]} <br />
+                {service.title.split(' ').slice(1).join(' ')}
               </span>
-            </motion.div>
+            </div>
           );
         })}
       </motion.div>

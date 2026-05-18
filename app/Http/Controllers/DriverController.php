@@ -355,6 +355,11 @@ class DriverController extends Controller
 
         $filePath = $request->file('file')->store('driver-documents', 'public');
 
+        $driver->documents()
+            ->whereNull('archived_at')
+            ->where('document_type', $documentType)
+            ->update(['archived_at' => now()]);
+
         $driver->documents()->create([
             'document_type' => $documentType,
             'document_name' => $documentType,
@@ -689,18 +694,16 @@ class DriverController extends Controller
     public static function getDriverDocumentAlertsForLayout(): array
     {
         $today = now()->startOfDay();
-        // En geniş eşik 30 gün olduğu için 30 güne kadar tüm belgeleri çekiyoruz
-        $maxThreshold = now()->copy()->addDays(30)->endOfDay();
 
         return Document::query()
             ->where('documentable_type', Driver::class)
-            ->where('is_active', true)
+            ->whereNull('archived_at') // Arşivlenmiş belgeleri yoksay
             ->whereNotNull('end_date')
-            ->whereDate('end_date', '<=', $maxThreshold)
             ->with('documentable')
-            ->orderBy('end_date')
+            ->orderByDesc('end_date')
             ->get()
             ->filter(fn ($doc) => $doc->documentable)
+            ->unique(fn ($doc) => $doc->documentable_id . '_' . $doc->document_type) // Sadece en güncel belgeyi tut
             ->filter(function ($doc) use ($today) {
                 // Her belge türüne özel eşik uygula
                 $endDate = Carbon::parse($doc->end_date)->startOfDay();
@@ -710,6 +713,7 @@ class DriverController extends Controller
                 // Süresi geçmiş VEYA eşik içindeki belgeleri göster
                 return $remainingDays < 0 || $remainingDays <= $threshold;
             })
+            ->sortBy('end_date')
             ->map(function ($doc) use ($today) {
                 $endDate = Carbon::parse($doc->end_date)->startOfDay();
                 $remainingDays = $today->diffInDays($endDate, false);

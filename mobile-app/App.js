@@ -44,6 +44,7 @@ import ActivityScreen from './src/screens/ActivityScreen';
 import CompanyUsersScreen from './src/screens/CompanyUsersScreen';
 import CompanyUserFormScreen from './src/screens/CompanyUserFormScreen';
 import ReportsScreen from './src/screens/ReportsScreen';
+import CompanyDocumentsScreen from './src/screens/CompanyDocumentsScreen';
 import PayrollScreen from './src/screens/PayrollScreen';
 import PayrollDetailScreen from './src/screens/PayrollDetailScreen';
 import FinanceScreen from './src/screens/FinanceScreen';
@@ -248,6 +249,7 @@ function MenuStackScreen() {
             <MenuStack.Screen name="Trips" component={TripsScreen} />
             <MenuStack.Screen name="TripDetail" component={TripDetailScreen} />
             <MenuStack.Screen name="Reports" component={ReportsScreen} />
+            <MenuStack.Screen name="CompanyDocuments" component={CompanyDocumentsScreen} />
             <MenuStack.Screen name="Payrolls" component={PayrollScreen} />
             <MenuStack.Screen name="PayrollDetail" component={PayrollDetailScreen} />
             <MenuStack.Screen name="Finance" component={FinanceScreen} />

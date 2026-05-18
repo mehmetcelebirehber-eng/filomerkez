@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, ChevronDown, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const videoList = [
   '/videos/personel_video.mp4',
@@ -43,20 +43,46 @@ const heroContents = [
   }
 ];
 
-export default function Hero({ activeIndex = 0, onVideoEnd, onCTAClick }) {
+export default function Hero({ activeIndex = 0, isIntroPlaying = false, onVideoEnd, onCTAClick, onNext, onPrev }) {
+  useEffect(() => {
+    let timer;
+    if (activeIndex === 1) {
+      // Cut the student transport video at 7 seconds
+      timer = setTimeout(() => {
+        onVideoEnd && onVideoEnd();
+      }, 7000);
+    }
+    return () => clearTimeout(timer);
+  }, [activeIndex, onVideoEnd]);
+
   return (
     <section 
+      className="hero-section"
       style={{ 
         position: 'relative',
         height: '85vh', 
         minHeight: '650px',
-        width: '100%',
+        width: '98%',
+        margin: '0 auto',
+        marginTop: '10px',
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        borderRadius: '45px',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
       }}
     >
+      <style>{`
+        @media (max-width: 768px) {
+          .hero-section { 
+            height: auto !important; 
+            min-height: 0 !important; 
+            aspect-ratio: 16 / 9 !important; 
+          }
+          .hero-card-container { display: none !important; }
+        }
+      `}</style>
       {/* Background Video with Parallax-like scale effect */}
       <motion.div 
         initial={{ scale: 1.1 }}
@@ -69,13 +95,16 @@ export default function Hero({ activeIndex = 0, onVideoEnd, onCTAClick }) {
           width: '100%',
           height: '100%',
           zIndex: 1,
-          overflow: 'hidden'
+          overflow: 'hidden',
+          borderRadius: '45px',
+          backgroundColor: '#0a192f'
         }}
       >
         {/* AnimatePresence for smooth fade transitions between videos if needed, but keying the video itself is robust */}
         <AnimatePresence mode="wait">
           <motion.video
-            key={videoList[activeIndex]}
+            className="hero-video"
+            key={isIntroPlaying ? 'intro' : videoList[activeIndex]}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -84,17 +113,44 @@ export default function Hero({ activeIndex = 0, onVideoEnd, onCTAClick }) {
             muted
             playsInline
             onEnded={onVideoEnd}
-            poster="/images/hero_banner.png"
+
             style={{
               width: '100%',
               height: '100%',
-              objectFit: 'cover'
+              objectFit: 'cover',
+              objectPosition: 'center'
             }}
           >
-            <source src={videoList[activeIndex]} type="video/mp4" />
+            <source src={isIntroPlaying ? '/videos/intro_video.mp4' : videoList[activeIndex]} type="video/mp4" />
           </motion.video>
         </AnimatePresence>
       </motion.div>
+
+      {/* Navigation Arrows */}
+      {!isIntroPlaying && (
+        <>
+          <div style={{ position: 'absolute', top: '50%', left: '3%', transform: 'translateY(-50%)', zIndex: 20 }}>
+            <motion.button 
+              onClick={(e) => { e.stopPropagation(); onPrev && onPrev(); }}
+              whileHover={{ scale: 1.1, background: 'rgba(255,255,255,0.2)' }}
+              whileTap={{ scale: 0.9 }}
+              style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', cursor: 'pointer', backdropFilter: 'blur(5px)' }}
+            >
+              <ChevronLeft size={30} />
+            </motion.button>
+          </div>
+          <div style={{ position: 'absolute', top: '50%', right: '3%', transform: 'translateY(-50%)', zIndex: 20 }}>
+            <motion.button 
+              onClick={(e) => { e.stopPropagation(); onNext && onNext(); }}
+              whileHover={{ scale: 1.1, background: 'rgba(255,255,255,0.2)' }}
+              whileTap={{ scale: 0.9 }}
+              style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', cursor: 'pointer', backdropFilter: 'blur(5px)' }}
+            >
+              <ChevronRight size={30} />
+            </motion.button>
+          </div>
+        </>
+      )}
 
       {/* Subtle Gradient Overlay only at the bottom for the scroll down arrow and 3D depth */}
       <div 
@@ -110,15 +166,16 @@ export default function Hero({ activeIndex = 0, onVideoEnd, onCTAClick }) {
         }}
       />
 
-      {/* Dynamic Content Overlay (Premium Glassmorphism on the right side) */}
-      <div 
+      {/* Dynamic Content Overlay (Premium Glassmorphism on the right bottom) */}
+      {!isIntroPlaying && (
+        <div 
+        className="hero-card-container"
         style={{ 
           position: 'absolute', 
           zIndex: 10, 
-          top: '40%', // Positioned elegantly
-          right: '5%', 
-          transform: 'translateY(-50%)',
-          maxWidth: '560px',
+          bottom: '50px', // Positioned at bottom right elegantly
+          right: '50px', 
+          maxWidth: 'min(560px, 90vw)',
           width: '90%',
           pointerEvents: 'none' // Allows clicking through
         }}
@@ -126,6 +183,7 @@ export default function Hero({ activeIndex = 0, onVideoEnd, onCTAClick }) {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeIndex}
+            className="hero-glass-card"
             initial={{ opacity: 0, x: 60, filter: 'blur(15px)' }}
             animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
             exit={{ opacity: 0, x: -60, filter: 'blur(15px)' }}
@@ -134,7 +192,7 @@ export default function Hero({ activeIndex = 0, onVideoEnd, onCTAClick }) {
               background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 23, 42, 0.4) 100%)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
-              padding: '45px 50px',
+              padding: 'clamp(25px, 5vw, 45px) clamp(20px, 5vw, 50px)',
               borderRadius: '30px',
               border: '1px solid rgba(255,255,255,0.1)',
               borderTop: '1px solid rgba(255,255,255,0.25)',
@@ -146,6 +204,7 @@ export default function Hero({ activeIndex = 0, onVideoEnd, onCTAClick }) {
           >
             {/* Subtitle */}
             <motion.div 
+              className="hero-subtitle"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
@@ -167,6 +226,7 @@ export default function Hero({ activeIndex = 0, onVideoEnd, onCTAClick }) {
 
             {/* Title */}
             <motion.h2 
+              className="hero-title"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
@@ -187,6 +247,7 @@ export default function Hero({ activeIndex = 0, onVideoEnd, onCTAClick }) {
 
             {/* Description */}
             <motion.p 
+              className="hero-description"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}
@@ -204,6 +265,7 @@ export default function Hero({ activeIndex = 0, onVideoEnd, onCTAClick }) {
             {/* Features (Pills) */}
             {heroContents[activeIndex].features && heroContents[activeIndex].features.length > 0 && (
               <motion.div 
+                className="hero-features"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.6 }}
@@ -212,6 +274,7 @@ export default function Hero({ activeIndex = 0, onVideoEnd, onCTAClick }) {
                 {heroContents[activeIndex].features.map((feature, i) => (
                   <div 
                     key={i} 
+                    className="hero-feature-pill"
                     style={{ 
                       display: 'flex', 
                       alignItems: 'center', 
@@ -235,6 +298,7 @@ export default function Hero({ activeIndex = 0, onVideoEnd, onCTAClick }) {
 
             {/* CTA Button */}
             <motion.a 
+              className="hero-cta"
               onClick={() => onCTAClick && onCTAClick(activeIndex)}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -262,6 +326,7 @@ export default function Hero({ activeIndex = 0, onVideoEnd, onCTAClick }) {
           </motion.div>
         </AnimatePresence>
       </div>
+      )}
     </section>
   );
 }

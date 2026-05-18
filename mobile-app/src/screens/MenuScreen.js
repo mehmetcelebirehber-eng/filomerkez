@@ -18,6 +18,7 @@ const menuItems = [
     { id: 8, icon: 'calendar-outline', label: 'Puantaj / Sefer', sub: 'OPERASYON KAYITLARI', color: '#F59E0B', route: 'Trips', permission: 'trips.view' },
     { id: 9, icon: 'cash-outline', label: 'Maaşlar', sub: 'FİNANSAL KAYITLAR', color: '#F43F5E', route: 'Payrolls', permission: 'payrolls.view' },
     { id: 10, icon: 'business-outline', label: 'Müşteriler', sub: 'MÜŞTERİ YÖNETİMİ', color: '#14B8A6', route: 'Customers', permission: 'customers.view' },
+    { id: 17, icon: 'folder-open-outline', label: 'Şirket Evrakları', sub: 'KURUMSAL BELGELER', color: '#8B5CF6', route: 'CompanyDocuments', permission: 'company_documents.view' },
     { id: 11, icon: 'pie-chart-outline', label: 'Raporlar', sub: 'ANALİZ MERKEZİ', color: '#38BDF8', route: 'Reports', permission: 'reports.view' },
     { id: 13, icon: 'time-outline', label: 'Loglar', sub: 'AKTİVİTE KAYITLARI', color: '#94A3B8', route: 'Activity', adminOnly: true },
     { id: 14, icon: 'people-circle-outline', label: 'Kullanıcılar', sub: 'ERİŞİM KONTROLÜ', color: '#6366F1', route: 'CompanyUsers', adminOnly: true },

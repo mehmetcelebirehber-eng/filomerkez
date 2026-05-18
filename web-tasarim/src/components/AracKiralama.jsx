@@ -53,7 +53,7 @@ export default function AracKiralama({ onBack, onQuoteClick }) {
           onClick={onBack}
           whileHover={{ x: -5, background: 'rgba(255,255,255,0.2)' }}
           style={{ 
-            position: 'absolute', top: '120px', left: '5%', 
+            position: 'absolute', top: '30px', left: '5%', 
             background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', 
             color: 'white', padding: '10px 24px', borderRadius: '50px', 
             display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',

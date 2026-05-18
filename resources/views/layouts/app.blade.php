@@ -63,13 +63,16 @@
     if ($user && $company) {
         $expiredVehicleDocuments = \App\Models\Document::query()
             ->where('documentable_type', \App\Models\Fleet\Vehicle::class)
-            ->where('is_active', true)
+            ->whereNull('archived_at') // Arşivlenmiş belgeleri tamamen yoksay
             ->whereNotNull('end_date')
-            ->whereDate('end_date', '<', now()->toDateString())
             ->with('documentable')
-            ->orderBy('end_date')
+            ->orderByDesc('end_date') // En yeni tarihli olanı en üste al
             ->get()
-            ->filter(fn ($doc) => $doc->documentable);
+            ->filter(fn ($doc) => $doc->documentable)
+            ->unique(fn ($doc) => $doc->documentable_id . '_' . $doc->document_type) // Her araç için her belge tipinden sadece EN GÜNCEL olanı tut
+            ->filter(fn ($doc) => $doc->end_date->startOfDay()->lt(now()->startOfDay())) // Kalan en güncel belgelerden günü geçmiş olanları filtrele
+            ->sortBy('end_date') // Yakın tarihte bitenleri önce göster
+            ->values();
 
         $driverDocumentAlerts = collect(\App\Http\Controllers\DriverController::getDriverDocumentAlertsForLayout());
 

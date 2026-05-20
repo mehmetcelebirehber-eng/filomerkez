@@ -29,38 +29,16 @@
 
         <div class="relative px-6 py-8 md:px-8">
             <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                <div class="flex items-start gap-4">
-                    <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 text-3xl text-white shadow-lg shadow-blue-500/20">
+                <div class="flex items-center gap-5">
+                    <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-[24px] bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 text-4xl text-white shadow-xl shadow-indigo-500/30">
                         🏢
                     </div>
 
                     <div>
-                        <h1 class="text-3xl font-black tracking-tight text-transparent md:text-5xl bg-clip-text bg-[linear-gradient(110deg,#0f172a,45%,#94a3b8,55%,#0f172a)] bg-[length:200%_auto] animate-text-shine py-2">
+                        <h1 class="text-3xl font-black tracking-tight text-transparent md:text-5xl bg-clip-text animate-text-shine py-2" style="background-image: linear-gradient(110deg, #1e3a8a 0%, #6366f1 50%, #1e3a8a 100%); background-size: 200% auto;">
                             {{ $customer->company_name }}
                         </h1>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div class="rounded-3xl bg-white/80 px-5 py-4 shadow-sm ring-1 ring-slate-200/70 backdrop-blur">
-                        <div class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-                            Geçerli Sözleşme
-                        </div>
-                        <div class="mt-2 text-lg font-bold text-slate-900">
-                            {{ $activeContract ? $activeContract->year . ' Sözleşmesi' : 'Aktif sözleşme yok' }}
-                        </div>
-                    </div>
-
-                    <div class="rounded-3xl bg-white/80 px-5 py-4 shadow-sm ring-1 ring-slate-200/70 backdrop-blur">
-                        <div class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-                            Portal Kullanıcısı
-                        </div>
-                        <div class="mt-2 text-lg font-bold text-slate-900">
-                            {{ $user->name }}
-                        </div>
-                        <div class="mt-1 text-xs text-slate-500">
-                            {{ $user->username ?: '-' }}
-                        </div>
+                        <p class="text-sm font-semibold text-slate-500">Portalda görüntülenen firma</p>
                     </div>
                 </div>
             </div>

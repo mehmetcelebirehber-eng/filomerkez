@@ -205,10 +205,17 @@ Route::get('/dashboard', function () {
     $fuelAnomalies = collect();
     $vehiclesWithBounds = Vehicle::whereNotNull('min_km_per_liter')->orWhereNotNull('max_km_per_liter')->get();
     foreach ($vehiclesWithBounds as $v) {
-        $recentFuels = Fuel::where('vehicle_id', $v->id)->orderByDesc('date')->orderByDesc('id')->take(6)->get()->reverse()->values();
-        $prevFuel = null;
-        foreach ($recentFuels as $f) {
-            if ($prevFuel && !is_null($f->km) && !is_null($prevFuel->km) && $f->km > $prevFuel->km && $f->liters > 0) {
+        $recentFuels = Fuel::where('vehicle_id', $v->id)
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->take(2)
+            ->get();
+            
+        if ($recentFuels->count() === 2) {
+            $f = $recentFuels[0];
+            $prevFuel = $recentFuels[1];
+            
+            if (!is_null($f->km) && !is_null($prevFuel->km) && $f->km > $prevFuel->km && $f->liters > 0) {
                 $kmDiff = $f->km - $prevFuel->km;
                 $kpl = round($kmDiff / $f->liters, 2);
                 
@@ -229,10 +236,9 @@ Route::get('/dashboard', function () {
                     $fuelAnomalies->push($f);
                 }
             }
-            $prevFuel = $f;
         }
     }
-    $fuelAnomalies = $fuelAnomalies->unique('id')->sortByDesc('date')->take(5)->values();
+    $fuelAnomalies = $fuelAnomalies->sortByDesc('date')->take(10)->values();
 
     return view('dashboard', compact(
         'vehicleCount',

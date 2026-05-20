@@ -543,6 +543,19 @@ Route::middleware('auth')->group(function () {
     Route::post('drivers/{driver}/leave-work', [\App\Http\Controllers\DriverController::class, 'leaveWork'])->name('drivers.leave-work');
     Route::post('drivers/{driver}/change-vehicle', [DriverController::class, 'changeVehicle'])->name('drivers.change-vehicle');
 
+    Route::get('/customers/{customer}/company-documents', [\App\Http\Controllers\CustomerCompanyDocumentController::class, 'index'])
+        ->middleware('permission:customers.view')
+        ->name('customers.company-documents.index');
+    Route::post('/customers/{customer}/company-documents', [\App\Http\Controllers\CustomerCompanyDocumentController::class, 'store'])
+        ->middleware('permission:customers.view')
+        ->name('customers.company-documents.store');
+    Route::post('/customers/{customer}/company-documents/import', [\App\Http\Controllers\CustomerCompanyDocumentController::class, 'importFromCompany'])
+        ->middleware('permission:customers.view')
+        ->name('customers.company-documents.import');
+    Route::delete('/customers/{customer}/company-documents/{document}', [\App\Http\Controllers\CustomerCompanyDocumentController::class, 'destroy'])
+        ->middleware('permission:customers.view')
+        ->name('customers.company-documents.destroy');
+
     Route::resource('customers', CustomerController::class)
         ->middleware('permission:customers.view');
 

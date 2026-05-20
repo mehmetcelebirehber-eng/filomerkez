@@ -36,11 +36,11 @@
                 </div>
 
                 <div class="relative flex flex-wrap items-center gap-3">
-                    <button type="button" class="inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-95 group/btn overflow-hidden" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);">
+                    <a href="{{ route('customers.company-documents.index', $customer) }}" class="inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-95 group/btn overflow-hidden" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);">
                         <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover/btn:animate-[shimmer_1.5s_infinite]"></div>
                         <span class="text-lg drop-shadow-md">📂</span>
                         <span>Firma Evrakları</span>
-                    </button>
+                    </a>
                 </div>
             </div>
 

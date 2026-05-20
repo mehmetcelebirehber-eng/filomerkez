@@ -65,6 +65,11 @@ class Customer extends Model
             ->latest();
     }
 
+    public function jointVentures(): HasMany
+    {
+        return $this->hasMany(CustomerJointVenture::class);
+    }
+
     public function portalUsers(): HasMany
     {
         return $this->hasMany(User::class)

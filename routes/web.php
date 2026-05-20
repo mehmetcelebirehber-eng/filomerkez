@@ -570,6 +570,17 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:customers.view')
         ->name('customers.service-routes.documents.destroy');
 
+    // Ortak Girişimler
+    Route::post('/customers/{customer}/joint-ventures', [\App\Http\Controllers\CustomerJointVentureController::class, 'store'])
+        ->middleware('permission:customers.edit')
+        ->name('customers.joint-ventures.store');
+    Route::put('/customers/{customer}/joint-ventures/{jointVenture}', [\App\Http\Controllers\CustomerJointVentureController::class, 'update'])
+        ->middleware('permission:customers.edit')
+        ->name('customers.joint-ventures.update');
+    Route::delete('/customers/{customer}/joint-ventures/{jointVenture}', [\App\Http\Controllers\CustomerJointVentureController::class, 'destroy'])
+        ->middleware('permission:customers.delete')
+        ->name('customers.joint-ventures.destroy');
+
     Route::resource('customers', CustomerController::class)
         ->middleware('permission:customers.view');
 

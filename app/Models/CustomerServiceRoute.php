@@ -89,4 +89,9 @@ class CustomerServiceRoute extends Model
     {
         return $this->hasMany(CustomerRouteStop::class, 'customer_service_route_id')->orderBy('stop_order');
     }
+
+    public function jointVenture()
+    {
+        return $this->belongsTo(CustomerJointVenture::class, 'joint_venture_id');
+    }
 }

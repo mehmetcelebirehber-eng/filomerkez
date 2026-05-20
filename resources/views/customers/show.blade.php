@@ -226,6 +226,11 @@
                 <span>👥</span>
                 <span>Kullanıcılar</span>
             </a>
+
+            <a href="{{ route('customers.show', [$customer, 'tab' => 'joint-ventures']) }}" class="{{ $tabClass('joint-ventures') }}">
+                <span>🤝</span>
+                <span>Ortak Girişim</span>
+            </a>
         </div>
     </div>
 
@@ -262,6 +267,10 @@
 
     @if($activeTab === 'users')
         @include('customers.partials.users-tab')
+    @endif
+
+    @if($activeTab === 'joint-ventures')
+        @include('customers.partials.joint-ventures-tab')
     @endif
 
 </div>

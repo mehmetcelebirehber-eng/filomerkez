@@ -211,7 +211,7 @@
                                 @foreach($sourceDocuments as $cDoc)
                                     @php
                                         if (!$cDoc->documentable) { continue; }
-                                        $prefix = $isVehicle ? ($cDoc->documentable->plate ?? 'Bilinmeyen Araç') : ($cDoc->documentable->first_name . ' ' . $cDoc->documentable->last_name);
+                                        $prefix = $isVehicle ? ($cDoc->documentable->plate ?? 'Bilinmeyen Araç') : ($cDoc->documentable->full_name ?? 'Bilinmeyen Şoför');
                                         $labelText = '[' . $prefix . '] - ' . $cDoc->document_name . ($cDoc->end_date ? ' (Bitiş: '.$cDoc->end_date->format('d.m.Y').')' : '');
                                     @endphp
                                     { id: '{{ $cDoc->id }}', label: '{{ addslashes($labelText) }}' },

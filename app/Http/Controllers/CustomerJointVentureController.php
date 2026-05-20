@@ -62,11 +62,16 @@ class CustomerJointVentureController extends Controller
             'routes.*' => 'exists:customer_service_routes,id',
         ]);
 
+        if (empty($jointVenture->access_token)) {
+            $jointVenture->access_token = \Illuminate\Support\Str::random(40);
+        }
+
         $jointVenture->update([
             'company_name' => $request->company_name,
             'tax_number' => $request->tax_number,
             'phone' => $request->phone,
             'address' => $request->address,
+            'access_token' => $jointVenture->access_token,
         ]);
 
         // Önce eski atamaları temizle

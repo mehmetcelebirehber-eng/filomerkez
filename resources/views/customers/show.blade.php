@@ -207,6 +207,11 @@
                 <span>Servisler</span>
             </a>
 
+            <a href="{{ route('customers.show', [$customer, 'tab' => 'documents']) }}" class="{{ $tabClass('documents') }}">
+                <span>📁</span>
+                <span>Belge ve Dökümanlar</span>
+            </a>
+
             <a href="{{ route('customers.show', [$customer, 'tab' => 'invoices']) }}" class="{{ $tabClass('invoices') }}">
                 <span>🧾</span>
                 <span>Faturalar</span>
@@ -237,6 +242,10 @@
 
     @if($activeTab === 'services')
         @include('customers.partials.services-tab')
+    @endif
+
+    @if($activeTab === 'documents')
+        @include('customers.partials.documents-tab')
     @endif
 
     @if($activeTab === 'invoices')

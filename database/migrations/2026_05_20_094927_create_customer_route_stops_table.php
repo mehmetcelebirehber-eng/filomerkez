@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('customer_route_stops', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_service_route_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('customer_service_route_id')->constrained('customer_service_routes')->cascadeOnDelete();
             $table->string('stop_name');
             $table->time('stop_time')->nullable();
             $table->integer('stop_order')->default(0);

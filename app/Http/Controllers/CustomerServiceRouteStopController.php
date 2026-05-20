@@ -75,14 +75,30 @@ class CustomerServiceRouteStopController extends Controller
             }
             
             $start = 0;
-            if (count($data) > 0 && isset($data[0][0]) && stripos((string)$data[0][0], 'Durak') !== false) {
+            // Check if the first row is a header
+            if (count($data) > 0 && isset($data[0][0]) && (stripos((string)$data[0][0], 'Durak') !== false || stripos((string)$data[0][0], 'MÜŞTERİ') !== false || stripos((string)$data[0][0], 'DURAK BİLGİSİ') !== false)) {
                 $start = 1;
             }
+            // Because we exported with a title on row 1, empty on row 2, and headers on row 3
+            // The import needs to find where the actual stops begin.
+            
+            // Actually, a better approach is to skip rows until we find the real data or just skip the first 3 rows if it matches our export format
+            $startIndex = 0;
+            foreach ($data as $index => $row) {
+                if (isset($row[0]) && mb_strtoupper((string)$row[0]) === 'DURAK ADI') {
+                    $startIndex = $index + 1;
+                    break;
+                }
+            }
+            if ($startIndex == 0 && count($data) > 0 && stripos((string)$data[0][0], 'Durak') !== false) {
+                $startIndex = 1;
+            }
 
-            $currentMaxOrder = $route->stops()->max('stop_order') ?? 0;
-            $order = $currentMaxOrder + 1;
+            // DELETE EXISTING STOPS
+            $route->stops()->delete();
+            $order = 1;
 
-            foreach (array_slice($data, $start) as $row) {
+            foreach (array_slice($data, $startIndex) as $row) {
                 if (!isset($row[0]) || empty(trim((string)$row[0]))) continue;
 
                 $stopName = trim((string)$row[0]);

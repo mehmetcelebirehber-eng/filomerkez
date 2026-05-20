@@ -30,6 +30,20 @@
         </div>
     @endif
 
+    @if ($errors->any())
+        <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm flex flex-col gap-2">
+            <div class="flex items-center gap-3 font-semibold">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Cross%20Mark.png" class="w-6 h-6">
+                Lütfen aşağıdaki hataları düzeltin:
+            </div>
+            <ul class="list-disc space-y-1 pl-10">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div>
             <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">Şirket Evrakları</h2>

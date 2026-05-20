@@ -36,19 +36,36 @@
         
         <div class="rounded-3xl bg-white p-6 shadow-xl shadow-slate-200/40 ring-1 ring-slate-100 mb-6">
             <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-                <div>
-                    <h2 class="text-lg font-black text-slate-800">Durak Listesi</h2>
-                    <p class="text-sm text-slate-500">İlk duraktan son durağa kadar sıralı şekilde ekleyin.</p>
+                <div class="flex items-center gap-4">
+                    <div>
+                        <h2 class="text-lg font-black text-slate-800">Durak Listesi</h2>
+                        <p class="text-sm text-slate-500">İlk duraktan son durağa kadar sıralı şekilde ekleyin.</p>
+                    </div>
                 </div>
-                <button type="button" onclick="addStopRow()" class="px-4 py-2 bg-slate-100 rounded-xl text-sm font-black text-blue-600 shadow-sm hover:bg-slate-200 transition-all active:scale-95">
-                    + Yeni Durak Ekle
-                </button>
+                <div class="flex items-center gap-3">
+                    <button type="button" id="bulkDeleteBtn" onclick="deleteSelectedRows()" class="hidden px-4 py-2 bg-rose-50 rounded-xl text-sm font-black text-rose-600 shadow-sm hover:bg-rose-100 transition-all active:scale-95">
+                        <i class="fi fi-rr-trash mr-1"></i> Seçilenleri Sil (<span id="selectedCount">0</span>)
+                    </button>
+                    <button type="button" onclick="addStopRow()" class="px-4 py-2 bg-slate-100 rounded-xl text-sm font-black text-blue-600 shadow-sm hover:bg-slate-200 transition-all active:scale-95">
+                        + Yeni Durak Ekle
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 px-3 py-2 mb-2 bg-slate-50/80 rounded-xl">
+                <div class="pl-2">
+                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleAllCheckboxes(this)" class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 shadow-sm cursor-pointer transition-all">
+                </div>
+                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider pl-2">Tümünü Seç</div>
             </div>
 
             <div id="stopsContainer" class="space-y-3">
                 @if($stops->count() > 0)
                     @foreach($stops as $index => $stop)
-                        <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl ring-1 ring-slate-200 group stop-row">
+                        <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl ring-1 ring-slate-200 group stop-row transition-all hover:ring-blue-200">
+                            <div class="flex items-center pl-1">
+                                <input type="checkbox" onchange="updateBulkDeleteBtn()" class="row-checkbox w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 shadow-sm cursor-pointer transition-all">
+                            </div>
                             <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-slate-400 font-black shadow-sm ring-1 ring-slate-100 stop-number">
                                 {{ $index + 1 }}
                             </div>
@@ -58,14 +75,17 @@
                             <div class="w-32 shrink-0">
                                 <input type="time" name="stops[{{ $index }}][stop_time]" value="{{ $stop->stop_time ? \Carbon\Carbon::parse($stop->stop_time)->format('H:i') : '' }}" class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 text-sm font-bold shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all">
                             </div>
-                            <button type="button" onclick="this.closest('.stop-row').remove(); updateStopNumbers();" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:bg-rose-50 hover:shadow-md hover:shadow-rose-500/20 hover:ring-rose-200 active:scale-95 group/btn">
+                            <button type="button" onclick="this.closest('.stop-row').remove(); updateStopNumbers(); updateBulkDeleteBtn();" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:bg-rose-50 hover:shadow-md hover:shadow-rose-500/20 hover:ring-rose-200 active:scale-95 group/btn">
                                 <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Wastebasket.png" alt="Sil" class="h-6 w-6 opacity-60 transition-all duration-300 group-hover/btn:opacity-100 group-hover/btn:scale-110 drop-shadow-sm" />
                             </button>
                         </div>
                     @endforeach
                 @else
                     <!-- Initial Empty Row -->
-                    <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl ring-1 ring-slate-200 group stop-row">
+                    <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl ring-1 ring-slate-200 group stop-row transition-all hover:ring-blue-200">
+                        <div class="flex items-center pl-1">
+                            <input type="checkbox" onchange="updateBulkDeleteBtn()" class="row-checkbox w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 shadow-sm cursor-pointer transition-all">
+                        </div>
                         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-slate-400 font-black shadow-sm ring-1 ring-slate-100 stop-number">1</div>
                         <div class="flex-1">
                             <input type="text" name="stops[0][stop_name]" placeholder="Durak Adı (Örn: Bosna Doğan Çanta)" required class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 text-sm font-bold shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all">
@@ -73,7 +93,7 @@
                         <div class="w-32 shrink-0">
                             <input type="time" name="stops[0][stop_time]" class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 text-sm font-bold shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all">
                         </div>
-                        <button type="button" onclick="this.closest('.stop-row').remove(); updateStopNumbers();" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:bg-rose-50 hover:shadow-md hover:shadow-rose-500/20 hover:ring-rose-200 active:scale-95 group/btn">
+                        <button type="button" onclick="this.closest('.stop-row').remove(); updateStopNumbers(); updateBulkDeleteBtn();" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:bg-rose-50 hover:shadow-md hover:shadow-rose-500/20 hover:ring-rose-200 active:scale-95 group/btn">
                             <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Wastebasket.png" alt="Sil" class="h-6 w-6 opacity-60 transition-all duration-300 group-hover/btn:opacity-100 group-hover/btn:scale-110 drop-shadow-sm" />
                         </button>
                     </div>
@@ -129,8 +149,11 @@
     function addStopRow() {
         const container = document.getElementById('stopsContainer');
         const row = document.createElement('div');
-        row.className = 'flex items-center gap-3 bg-slate-50 p-3 rounded-2xl ring-1 ring-slate-200 group stop-row';
+        row.className = 'flex items-center gap-3 bg-slate-50 p-3 rounded-2xl ring-1 ring-slate-200 group stop-row transition-all hover:ring-blue-200';
         row.innerHTML = `
+            <div class="flex items-center pl-1">
+                <input type="checkbox" onchange="updateBulkDeleteBtn()" class="row-checkbox w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 shadow-sm cursor-pointer transition-all">
+            </div>
             <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-slate-400 font-black shadow-sm ring-1 ring-slate-100 stop-number">#</div>
             <div class="flex-1">
                 <input type="text" name="stops[${stopIndex}][stop_name]" placeholder="Durak Adı (Örn: Bosna Doğan Çanta)" required class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 text-sm font-bold shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all">
@@ -138,7 +161,7 @@
             <div class="w-32 shrink-0">
                 <input type="time" name="stops[${stopIndex}][stop_time]" class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 text-sm font-bold shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all">
             </div>
-            <button type="button" onclick="this.closest('.stop-row').remove(); updateStopNumbers();" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:bg-rose-50 hover:shadow-md hover:shadow-rose-500/20 hover:ring-rose-200 active:scale-95 group/btn">
+            <button type="button" onclick="this.closest('.stop-row').remove(); updateStopNumbers(); updateBulkDeleteBtn();" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:bg-rose-50 hover:shadow-md hover:shadow-rose-500/20 hover:ring-rose-200 active:scale-95 group/btn">
                 <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Wastebasket.png" alt="Sil" class="h-6 w-6 opacity-60 transition-all duration-300 group-hover/btn:opacity-100 group-hover/btn:scale-110 drop-shadow-sm" />
             </button>
         `;
@@ -152,6 +175,46 @@
         numbers.forEach((el, idx) => {
             el.textContent = idx + 1;
         });
+    }
+
+    function toggleAllCheckboxes(source) {
+        const checkboxes = document.querySelectorAll('.row-checkbox');
+        checkboxes.forEach(cb => cb.checked = source.checked);
+        updateBulkDeleteBtn();
+    }
+
+    function updateBulkDeleteBtn() {
+        const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+        const totalCount = document.querySelectorAll('.row-checkbox').length;
+        const btn = document.getElementById('bulkDeleteBtn');
+        const countSpan = document.getElementById('selectedCount');
+        const selectAllCb = document.getElementById('selectAllCheckbox');
+        
+        countSpan.textContent = checkedCount;
+        
+        if (checkedCount > 0) {
+            btn.classList.remove('hidden');
+        } else {
+            btn.classList.add('hidden');
+        }
+        
+        if (totalCount > 0 && checkedCount === totalCount) {
+            selectAllCb.checked = true;
+        } else {
+            selectAllCb.checked = false;
+        }
+    }
+
+    function deleteSelectedRows() {
+        if (!confirm('Seçilen durakları formdan silmek istediğinize emin misiniz? (Kalıcı olması için Durakları Kaydet demeniz gerekmektedir.)')) return;
+        
+        const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+        checkboxes.forEach(cb => {
+            cb.closest('.stop-row').remove();
+        });
+        
+        updateStopNumbers();
+        updateBulkDeleteBtn();
     }
 </script>
 @endsection

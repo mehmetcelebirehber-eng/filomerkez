@@ -122,7 +122,7 @@ class CustomerServiceRouteStopController extends Controller
         $fileName = \Illuminate\Support\Str::slug($route->route_name) . '-duraklari.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\CustomerRouteStopsExport($stops, $route->route_name),
+            new \App\Exports\CustomerRouteStopsExport($stops, $route->route_name, $customer->company_name),
             $fileName
         );
     }

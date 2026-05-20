@@ -17,16 +17,19 @@ class CustomerRouteStopsExport implements FromCollection, WithHeadings, WithStyl
 {
     protected $stops;
     protected $routeName;
+    protected $customerName;
 
-    public function __construct($stops, $routeName)
+    public function __construct($stops, $routeName, $customerName)
     {
         $this->stops = $stops;
         $this->routeName = $routeName;
+        $this->customerName = $customerName;
     }
 
     public function collection()
     {
         $data = collect();
+        
         foreach ($this->stops as $stop) {
             $data->push([
                 'Durak Adı' => $stop->stop_name,
@@ -34,7 +37,6 @@ class CustomerRouteStopsExport implements FromCollection, WithHeadings, WithStyl
             ]);
         }
         
-        // Add a few empty rows to serve as a template if it's empty
         if ($data->isEmpty()) {
             for ($i = 1; $i <= 10; $i++) {
                 $data->push(['', '']);
@@ -47,8 +49,9 @@ class CustomerRouteStopsExport implements FromCollection, WithHeadings, WithStyl
     public function headings(): array
     {
         return [
-            'DURAK ADI',
-            'SAAT (SS:DD)',
+            [mb_strtoupper($this->customerName . ' / ' . $this->routeName . ' DURAK BİLGİSİ')],
+            [''],
+            ['DURAK ADI', 'SAAT (SS:DD)']
         ];
     }
 
@@ -56,8 +59,34 @@ class CustomerRouteStopsExport implements FromCollection, WithHeadings, WithStyl
     {
         $highestRow = $sheet->getHighestRow();
         
-        // Header Style
-        $sheet->getStyle('A1:B1')->applyFromArray([
+        // Merge title row
+        $sheet->mergeCells('A1:B1');
+        
+        // Title Style (Row 1)
+        $sheet->getStyle('A1')->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'color' => ['argb' => 'FF1E293B'], // Slate-800
+                'size' => 14,
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['argb' => 'FFF1F5F9'], // Slate-100
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['argb' => 'FFCBD5E1'], // Slate-300
+                ],
+            ],
+        ]);
+
+        // Header Style (Row 3)
+        $sheet->getStyle('A3:B3')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['argb' => 'FFFFFFFF'],
@@ -80,8 +109,8 @@ class CustomerRouteStopsExport implements FromCollection, WithHeadings, WithStyl
         ]);
         
         // Row Styles
-        if ($highestRow > 1) {
-            $sheet->getStyle('A2:B' . $highestRow)->applyFromArray([
+        if ($highestRow > 3) {
+            $sheet->getStyle('A4:B' . $highestRow)->applyFromArray([
                 'font' => [
                     'size' => 11,
                 ],
@@ -97,25 +126,26 @@ class CustomerRouteStopsExport implements FromCollection, WithHeadings, WithStyl
             ]);
             
             // Center align the time column
-            $sheet->getStyle('B2:B' . $highestRow)->applyFromArray([
+            $sheet->getStyle('B4:B' . $highestRow)->applyFromArray([
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_CENTER,
                 ],
             ]);
             
             // Zebra striping
-            for ($row = 2; $row <= $highestRow; $row++) {
+            for ($row = 4; $row <= $highestRow; $row++) {
                 if ($row % 2 == 0) {
                     $sheet->getStyle('A'.$row.':B'.$row)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFF9FAFB'); // Gray-50
                 }
             }
         }
 
-        // Set row height for header
-        $sheet->getRowDimension(1)->setRowHeight(30);
+        // Set row heights
+        $sheet->getRowDimension(1)->setRowHeight(40);
+        $sheet->getRowDimension(2)->setRowHeight(10);
+        $sheet->getRowDimension(3)->setRowHeight(30);
         
-        // Set row height for content
-        for ($row = 2; $row <= $highestRow; $row++) {
+        for ($row = 4; $row <= $highestRow; $row++) {
             $sheet->getRowDimension($row)->setRowHeight(25);
         }
 

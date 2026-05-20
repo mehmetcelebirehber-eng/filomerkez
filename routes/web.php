@@ -295,8 +295,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/customer-portal/trips', [CustomerPortalController::class, 'trips'])
         ->name('customer.portal.trips');
 
-    Route::get('/customer-portal/service-routes/{route}/stops/export', [CustomerPortalController::class, 'exportStops'])
-        ->name('customer.portal.dashboard.stops.export');
+    Route::get('/customer-portal/service-routes/{route}/stops', [CustomerPortalController::class, 'stops'])
+        ->name('customer.portal.dashboard.stops');
 
     /*
     |--------------------------------------------------------------------------

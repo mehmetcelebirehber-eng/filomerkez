@@ -116,7 +116,7 @@ class CustomerPortalController extends Controller
         return app(\App\Http\Controllers\TripController::class)->index($request);
     }
 
-    public function exportStops(Request $request, $routeId)
+    public function stops(Request $request, $routeId)
     {
         $user = Auth::user();
         abort_unless($user && $user->user_type === 'customer_portal', 403);
@@ -124,16 +124,11 @@ class CustomerPortalController extends Controller
         $route = \App\Models\CustomerServiceRoute::where('customer_id', $user->customer_id)->findOrFail($routeId);
         $customer = Customer::findOrFail($user->customer_id);
 
-        $stops = \App\Models\CustomerRouteStop::where('route_id', $route->id)
-            ->orderBy('sort_order')
+        $stops = \App\Models\CustomerRouteStop::where('customer_service_route_id', $route->id)
+            ->orderBy('stop_order')
             ->orderBy('id')
             ->get();
 
-        $fileName = \Illuminate\Support\Str::slug($route->route_name) . '-duraklari.xlsx';
-
-        return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\CustomerRouteStopsExport($stops, $route->route_name, $customer->company_name),
-            $fileName
-        );
+        return view('customer-portal.stops', compact('user', 'customer', 'route', 'stops'));
     }
 }

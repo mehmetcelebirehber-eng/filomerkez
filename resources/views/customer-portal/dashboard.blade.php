@@ -368,10 +368,10 @@
                                         
                                         <!-- Servis Durakları Butonu -->
                                         <div class="mt-4 flex justify-end">
-                                            <a href="{{ route('customer.portal.dashboard.stops.export', $route->id) }}" class="inline-flex relative items-center gap-2 rounded-2xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition-all hover:bg-indigo-700 hover:shadow-xl hover:-translate-y-0.5 active:scale-95 group overflow-hidden">
+                                            <a href="{{ route('customer.portal.dashboard.stops', $route->id) }}" class="inline-flex relative items-center gap-2 rounded-2xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition-all hover:bg-indigo-700 hover:shadow-xl hover:-translate-y-0.5 active:scale-95 group overflow-hidden">
                                                 <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:animate-shimmer"></div>
                                                 <span class="text-lg">📍</span>
-                                                <span>Servis Durakları (Excel İndir)</span>
+                                                <span>Servis Durakları</span>
                                             </a>
                                         </div>
                                     </div>

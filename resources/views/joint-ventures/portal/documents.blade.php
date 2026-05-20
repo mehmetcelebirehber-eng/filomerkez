@@ -104,9 +104,18 @@
 </div>
 
 <!-- Yeni Evrak Yükle Modal -->
-<div x-data="{ show: false }"
+<div x-data="{ 
+        show: false,
+        docName: '',
+        docType: '',
+        updateName() {
+            if (this.docType) {
+                this.docName = this.docType;
+            }
+        }
+     }"
      x-show="show"
-     x-on:open-modal.window="if ($event.detail === 'upload-document-modal') show = true"
+     x-on:open-modal.window="if ($event.detail === 'upload-document-modal') { show = true; docName = ''; docType = ''; }"
      x-on:keydown.escape.window="show = false"
      class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 sm:px-0"
      style="display: none;">
@@ -130,13 +139,31 @@
             
             <div class="space-y-4">
                 <div>
-                    <label class="mb-1.5 block text-sm font-semibold text-slate-700">Evrak Adı (örn: Araç Ruhsatı, SRC vs.) <span class="text-rose-500">*</span></label>
-                    <input type="text" name="document_name" required class="block w-full rounded-xl border-0 py-2.5 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
+                    <label class="mb-1.5 block text-sm font-semibold text-slate-700">Evrak Türü <span class="font-normal text-slate-400">(Opsiyonel)</span></label>
+                    <select name="document_type" x-model="docType" @change="updateName()" class="block w-full rounded-xl border-0 py-2.5 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
+                        <option value="">-- Tür Seçin --</option>
+                        @if($isVehicle)
+                            <option value="RUHSAT BELGESİ">RUHSAT BELGESİ</option>
+                            <option value="MUAYENE BELGESİ">MUAYENE BELGESİ</option>
+                            <option value="SİGORTA BELGESİ">SİGORTA BELGESİ</option>
+                            <option value="EKSOZ MUAYENE BELGESİ">EKSOZ MUAYENE BELGESİ</option>
+                            <option value="GÜZERGAH BELGESİ">GÜZERGAH BELGESİ</option>
+                            <option value="İMM POLİÇESİ">İMM POLİÇESİ</option>
+                            <option value="KASKO POLİÇESİ">KASKO POLİÇESİ</option>
+                            <option value="KOLTUK SİGORTASI">KOLTUK SİGORTASI</option>
+                        @else
+                            <option value="EHLİYET">EHLİYET</option>
+                            <option value="SRC BELGESİ">SRC BELGESİ</option>
+                            <option value="PSİKOTEKNİK BELGESİ">PSİKOTEKNİK BELGESİ</option>
+                            <option value="SABIKA KAYDI">SABIKA KAYDI</option>
+                            <option value="SAĞLIK RAPORU">SAĞLIK RAPORU</option>
+                        @endif
+                    </select>
                 </div>
 
                 <div>
-                    <label class="mb-1.5 block text-sm font-semibold text-slate-700">Evrak Türü <span class="font-normal text-slate-400">(Opsiyonel)</span></label>
-                    <input type="text" name="document_type" class="block w-full rounded-xl border-0 py-2.5 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
+                    <label class="mb-1.5 block text-sm font-semibold text-slate-700">Evrak Adı (örn: Araç Ruhsatı, SRC vs.) <span class="text-rose-500">*</span></label>
+                    <input type="text" name="document_name" x-model="docName" required class="block w-full rounded-xl border-0 py-2.5 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
                 </div>
 
                 <div>

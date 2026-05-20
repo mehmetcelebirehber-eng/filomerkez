@@ -33,11 +33,10 @@
                         </div>
                     </div>
 
-                    <div class="flex flex-col gap-3">
+                    <div class="flex flex-col gap-3" x-data='{ routeInfo: @json(["routeName" => $route->route_name, "stops" => $route->stops->map(function($s) { return ["name" => $s->stop_name, "time" => empty($s->stop_time) ? null : \Carbon\Carbon::parse($s->stop_time)->format("H:i")]; })]) }'>
                         <!-- Duraklar Butonu -->
                         <button type="button" 
-                           data-info="{{ json_encode(['routeName' => $route->route_name, 'stops' => $route->stops->map(function($s) { return ['name' => $s->stop_name, 'time' => \Carbon\Carbon::parse($s->stop_time)->format('H:i')]; })]) }}"
-                           @click="$dispatch('open-stops-modal', JSON.parse($el.dataset.info))" 
+                           @click="$dispatch('open-stops-modal', routeInfo)" 
                            class="group/btn relative overflow-hidden inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 text-sm font-black text-white shadow-md shadow-orange-500/20 hover:shadow-lg hover:from-amber-400 hover:to-orange-400 transition-all">
                             <!-- Animasyon Katmanı -->
                             <div class="absolute inset-0 flex h-full w-full justify-center [transform:skew(-12deg)_translateX(-150%)] group-hover/btn:duration-1000 group-hover/btn:[transform:skew(-12deg)_translateX(150%)]">

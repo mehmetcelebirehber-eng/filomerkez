@@ -43,13 +43,15 @@ class CustomerJointVentureController extends Controller
         return redirect()->back()->with('success', 'Ortak girişim firması başarıyla eklendi.');
     }
 
-    public function update(Request $request, Customer $customer, CustomerJointVenture $jointVenture)
+    public function update(Request $request, Customer $customer, $jointVentureId)
     {
         if (!auth()->user()->hasPermission('customers.edit')) {
             abort(403);
         }
 
-        if ($jointVenture->customer_id !== $customer->id) {
+        $jointVenture = CustomerJointVenture::findOrFail($jointVentureId);
+
+        if ($jointVenture->customer_id != $customer->id) {
             abort(404);
         }
 
@@ -89,13 +91,15 @@ class CustomerJointVentureController extends Controller
         return redirect()->back()->with('success', 'Ortak girişim firması başarıyla güncellendi.');
     }
 
-    public function destroy(Customer $customer, CustomerJointVenture $jointVenture)
+    public function destroy(Customer $customer, $jointVentureId)
     {
         if (!auth()->user()->hasPermission('customers.delete')) {
             abort(403);
         }
 
-        if ($jointVenture->customer_id !== $customer->id) {
+        $jointVenture = CustomerJointVenture::findOrFail($jointVentureId);
+
+        if ($jointVenture->customer_id != $customer->id) {
             abort(404);
         }
 

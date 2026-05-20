@@ -54,8 +54,8 @@
                             <div class="w-32 shrink-0">
                                 <input type="time" name="stops[{{ $index }}][stop_time]" value="{{ $stop->stop_time ? \Carbon\Carbon::parse($stop->stop_time)->format('H:i') : '' }}" class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 text-sm font-bold shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all">
                             </div>
-                            <button type="button" onclick="this.closest('.stop-row').remove(); updateStopNumbers();" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-rose-500 opacity-50 shadow-sm ring-1 ring-rose-100 transition-all hover:bg-rose-50 hover:opacity-100 hover:scale-105 active:scale-95">
-                                <i class="fi fi-rr-trash"></i>
+                            <button type="button" onclick="this.closest('.stop-row').remove(); updateStopNumbers();" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:bg-rose-50 hover:shadow-md hover:shadow-rose-500/20 hover:ring-rose-200 active:scale-95 group/btn">
+                                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Wastebasket.png" alt="Sil" class="h-6 w-6 opacity-60 transition-all duration-300 group-hover/btn:opacity-100 group-hover/btn:scale-110 drop-shadow-sm" />
                             </button>
                         </div>
                     @endforeach
@@ -69,8 +69,8 @@
                         <div class="w-32 shrink-0">
                             <input type="time" name="stops[0][stop_time]" class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 text-sm font-bold shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all">
                         </div>
-                        <button type="button" onclick="this.closest('.stop-row').remove(); updateStopNumbers();" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-rose-500 opacity-50 shadow-sm ring-1 ring-rose-100 transition-all hover:bg-rose-50 hover:opacity-100 hover:scale-105 active:scale-95">
-                            <i class="fi fi-rr-trash"></i>
+                        <button type="button" onclick="this.closest('.stop-row').remove(); updateStopNumbers();" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:bg-rose-50 hover:shadow-md hover:shadow-rose-500/20 hover:ring-rose-200 active:scale-95 group/btn">
+                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Wastebasket.png" alt="Sil" class="h-6 w-6 opacity-60 transition-all duration-300 group-hover/btn:opacity-100 group-hover/btn:scale-110 drop-shadow-sm" />
                         </button>
                     </div>
                 @endif
@@ -134,8 +134,8 @@
             <div class="w-32 shrink-0">
                 <input type="time" name="stops[${stopIndex}][stop_time]" class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 text-sm font-bold shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all">
             </div>
-            <button type="button" onclick="this.closest('.stop-row').remove(); updateStopNumbers();" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-rose-500 opacity-50 shadow-sm ring-1 ring-rose-100 transition-all hover:bg-rose-50 hover:opacity-100 hover:scale-105 active:scale-95">
-                <i class="fi fi-rr-trash"></i>
+            <button type="button" onclick="this.closest('.stop-row').remove(); updateStopNumbers();" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:bg-rose-50 hover:shadow-md hover:shadow-rose-500/20 hover:ring-rose-200 active:scale-95 group/btn">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Wastebasket.png" alt="Sil" class="h-6 w-6 opacity-60 transition-all duration-300 group-hover/btn:opacity-100 group-hover/btn:scale-110 drop-shadow-sm" />
             </button>
         `;
         container.appendChild(row);

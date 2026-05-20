@@ -153,6 +153,21 @@ class CustomerPortalController extends Controller
         );
     }
 
+    public function companyDocuments(Request $request)
+    {
+        $user = Auth::user();
+        abort_unless($user && $user->user_type === 'customer_portal', 403);
+
+        $customer = Customer::with('company')->findOrFail($user->customer_id);
+
+        $documents = \App\Models\Document::where('documentable_type', \App\Models\Company::class)
+            ->where('documentable_id', $customer->company_id)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return view('customer-portal.company-documents', compact('user', 'customer', 'documents'));
+    }
+
     public function documents(Request $request, $routeId)
     {
         $user = Auth::user();

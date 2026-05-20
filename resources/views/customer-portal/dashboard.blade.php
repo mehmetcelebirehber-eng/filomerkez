@@ -575,6 +575,32 @@
 
             @if($serviceRoutes && $serviceRoutes->count() > 0)
                 <div class="space-y-4">
+                    <!-- Firma Evrakları Satırı -->
+                    <div class="group relative flex flex-col md:flex-row md:items-center justify-between gap-4 overflow-hidden rounded-[24px] border border-blue-200/60 bg-blue-50/30 p-5 shadow-lg shadow-blue-200/40 transition-all hover:shadow-xl hover:border-blue-300 hover:ring-4 hover:ring-blue-100/50">
+                        <div class="absolute -left-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 blur-2xl transition-all group-hover:bg-blue-200/50"></div>
+                        
+                        <div class="relative flex items-center gap-4">
+                            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-[18px] text-2xl text-white shadow-md shadow-blue-500/20" style="background: linear-gradient(135deg, #3b82f6, #4f46e5);">
+                                🏢
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold uppercase tracking-widest text-blue-500 mb-1">
+                                    HİZMET SAĞLAYICI FİRMA
+                                </div>
+                                <h4 class="text-lg font-black text-slate-800">
+                                    {{ $customer->company->name ?? 'Ana Firma' }}
+                                </h4>
+                            </div>
+                        </div>
+
+                        <div class="relative flex flex-wrap items-center gap-3">
+                            <a href="{{ route('customer.portal.company-documents') }}" class="inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-95 group/btn overflow-hidden" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);">
+                                <span class="text-lg drop-shadow-md">📂</span>
+                                <span>Firma Evrakları</span>
+                            </a>
+                        </div>
+                    </div>
+
                     <!-- Servis Güzergahları Listesi -->
                     @foreach($serviceRoutes->sortBy('route_name', SORT_NATURAL) as $route)
                         <div class="group relative flex flex-col md:flex-row md:items-center justify-between gap-4 overflow-hidden rounded-[24px] border border-slate-200/60 bg-white p-5 shadow-lg shadow-slate-200/40 transition-all hover:shadow-xl hover:border-indigo-200 hover:ring-4 hover:ring-indigo-50/50">

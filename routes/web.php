@@ -316,6 +316,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/customer-portal/service-routes/{route}/stops/export', [\App\Http\Controllers\CustomerPortalController::class, 'exportStops'])->name('customer.portal.dashboard.stops.export');
     
     // Portal Documents
+    Route::get('/customer-portal/company-documents', [\App\Http\Controllers\CustomerPortalController::class, 'companyDocuments'])->name('customer.portal.company-documents');
     Route::get('/customer-portal/service-routes/{route}/documents', [\App\Http\Controllers\CustomerPortalController::class, 'documents'])->name('customer.portal.documents');
 
     /*

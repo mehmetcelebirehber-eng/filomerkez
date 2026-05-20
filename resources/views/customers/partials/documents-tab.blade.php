@@ -64,16 +64,16 @@
                     </div>
 
                     <div class="relative flex flex-wrap items-center gap-3">
-                        <a href="{{ route('customers.service-routes.documents.index', ['customer' => $customer->id, 'route' => $route->id, 'type' => 'vehicle']) }}" class="inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-95 group/btn overflow-hidden" style="background: linear-gradient(135deg, #fbbf24, #ea580c); box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.3);">
-                            <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover/btn:animate-[shimmer_1.5s_infinite]"></div>
-                            <span class="text-lg drop-shadow-md">📄</span>
-                            <span style="color: white !important;">Araç Evrakları</span>
+                        <a href="{{ route('customers.service-routes.documents.index', ['customer' => $customer->id, 'route' => $route->id, 'type' => 'vehicle']) }}" class="relative inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-95 group/btn overflow-hidden" style="background: linear-gradient(135deg, #fbbf24, #ea580c); box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.3);">
+                            <div class="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover/btn:animate-[shimmer_1.5s_infinite]"></div>
+                            <span class="text-lg drop-shadow-md relative z-10">📄</span>
+                            <span class="relative z-10" style="color: white !important;">Araç Evrakları</span>
                         </a>
                         
-                        <a href="{{ route('customers.service-routes.documents.index', ['customer' => $customer->id, 'route' => $route->id, 'type' => 'driver']) }}" class="inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-95 group/btn overflow-hidden" style="background: linear-gradient(135deg, #10b981, #0f766e); box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);">
-                            <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover/btn:animate-[shimmer_1.5s_infinite]"></div>
-                            <span class="text-lg drop-shadow-md">👨‍✈️</span>
-                            <span style="color: white !important;">Şoför Evrakları</span>
+                        <a href="{{ route('customers.service-routes.documents.index', ['customer' => $customer->id, 'route' => $route->id, 'type' => 'driver']) }}" class="relative inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-95 group/btn overflow-hidden" style="background: linear-gradient(135deg, #10b981, #0f766e); box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);">
+                            <div class="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover/btn:animate-[shimmer_1.5s_infinite]"></div>
+                            <span class="text-lg drop-shadow-md relative z-10">👨‍✈️</span>
+                            <span class="relative z-10" style="color: white !important;">Şoför Evrakları</span>
                         </a>
                     </div>
                 </div>

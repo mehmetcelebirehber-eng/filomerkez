@@ -157,9 +157,7 @@
 
         <form :action="formAction" method="POST" class="p-6">
             @csrf
-            <template x-if="isEdit">
-                <input type="hidden" name="_method" value="PUT">
-            </template>
+            <input type="hidden" name="_method" value="PUT" x-bind:disabled="!isEdit">
             
             <div class="grid gap-6 md:grid-cols-2">
                 <!-- Firma Bilgileri -->

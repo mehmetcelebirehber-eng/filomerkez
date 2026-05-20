@@ -17,7 +17,19 @@ class CustomerJointVenture extends Model
         'tax_number',
         'phone',
         'address',
+        'access_token',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->access_token)) {
+                $model->access_token = \Illuminate\Support\Str::random(40);
+            }
+        });
+    }
 
     public function customer()
     {

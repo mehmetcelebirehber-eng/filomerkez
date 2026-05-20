@@ -60,6 +60,14 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Taşeron (Ortak Girişim) Portalı
+Route::prefix('portal/jv/{token}')->name('portal.jv.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\JointVenturePortalController::class, 'index'])->name('index');
+    Route::get('/routes/{route}/documents', [\App\Http\Controllers\JointVenturePortalController::class, 'documents'])->name('documents.index');
+    Route::post('/routes/{route}/documents', [\App\Http\Controllers\JointVenturePortalController::class, 'storeDocument'])->name('documents.store');
+    Route::delete('/routes/{route}/documents/{document}', [\App\Http\Controllers\JointVenturePortalController::class, 'destroyDocument'])->name('documents.destroy');
+});
+
 Route::get('/run-migrations', function () {
     try {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);

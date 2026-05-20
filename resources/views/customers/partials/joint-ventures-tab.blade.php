@@ -23,12 +23,24 @@
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-slate-800">{{ $jv->company_name }}</h4>
-                                    <div class="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                                    <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
                                         @if($jv->tax_number)
                                             <span title="Vergi No" class="inline-flex items-center gap-1"><span class="text-slate-400">📄</span> {{ $jv->tax_number }}</span>
                                         @endif
                                         @if($jv->phone)
                                             <span title="Telefon" class="inline-flex items-center gap-1"><span class="text-slate-400">📞</span> {{ $jv->phone }}</span>
+                                        @endif
+                                        
+                                        @if($jv->access_token)
+                                            <span class="text-slate-300">|</span>
+                                            <div class="flex items-center gap-2">
+                                                <a href="{{ route('portal.jv.index', $jv->access_token) }}" target="_blank" class="inline-flex items-center gap-1 font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                                                    <span>🔗</span> Portal'a Git
+                                                </a>
+                                                <button type="button" onclick="navigator.clipboard.writeText('{{ route('portal.jv.index', $jv->access_token) }}'); alert('Portal linki kopyalandı!')" class="inline-flex items-center gap-1 font-semibold text-slate-500 hover:text-slate-700 transition-colors" title="Linki Kopyala">
+                                                    <span>📋</span> Kopyala
+                                                </button>
+                                            </div>
                                         @endif
                                     </div>
                                 </div>

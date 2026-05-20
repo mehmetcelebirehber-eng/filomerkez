@@ -57,7 +57,16 @@ Route::get('/run-migrations-secret', function () {
 });
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
+});
+
+Route::get('/run-migrations', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return 'Veritabanı güncellemeleri (migrations) başarıyla tamamlandı! <br><br> Çıktı: <br><pre>' . \Illuminate\Support\Facades\Artisan::output() . '</pre>';
+    } catch (\Exception $e) {
+        return 'Hata oluştu: ' . $e->getMessage();
+    }
 });
 
 /*

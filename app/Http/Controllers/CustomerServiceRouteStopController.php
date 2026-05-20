@@ -61,30 +61,40 @@ class CustomerServiceRouteStopController extends Controller
             'excel_file' => 'required|mimes:csv,txt,xlsx,xls|max:5120'
         ]);
 
-        // Simple CSV parser for simplicity, assuming Stop Name, Stop Time
         if ($request->hasFile('excel_file')) {
             $file = $request->file('excel_file');
-            $data = array_map('str_getcsv', file($file->getRealPath()));
             
-            // Assume no header, or just skip if first row is header
+            try {
+                $import = new class implements \Maatwebsite\Excel\Concerns\ToArray {
+                    public function array(array $array) { }
+                };
+                
+                $data = \Maatwebsite\Excel\Facades\Excel::toArray($import, $file)[0] ?? [];
+            } catch (\Exception $e) {
+                return back()->with('error', 'Dosya formatı okunamadı. Lütfen geçerli bir Excel veya CSV dosyası yükleyin.');
+            }
+            
             $start = 0;
-            if (count($data) > 0 && stripos($data[0][0], 'Durak') !== false) {
+            if (count($data) > 0 && isset($data[0][0]) && stripos((string)$data[0][0], 'Durak') !== false) {
                 $start = 1;
             }
 
             $currentMaxOrder = $route->stops()->max('stop_order') ?? 0;
             $order = $currentMaxOrder + 1;
 
-            for ($i = $start; $i < count($data); $i++) {
-                $row = $data[$i];
-                if (empty(trim($row[0]))) continue;
+            foreach (array_slice($data, $start) as $row) {
+                if (!isset($row[0]) || empty(trim((string)$row[0]))) continue;
 
-                $stopName = trim($row[0]);
-                $stopTime = isset($row[1]) ? trim($row[1]) : null;
+                $stopName = trim((string)$row[0]);
+                $stopTime = isset($row[1]) ? trim((string)$row[1]) : null;
                 
-                // validate time
-                if ($stopTime && !preg_match('/^(?:2[0-3]|[01][0-9]):[0-5][0-9]$/', $stopTime)) {
-                    $stopTime = null; // invalid time format, set to null
+                if ($stopTime) {
+                    // Normalize time if excel parsing parsed it weirdly or returned a decimal
+                    if (is_numeric($stopTime) && $stopTime < 1) {
+                        $stopTime = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($stopTime)->format('H:i');
+                    } elseif (!preg_match('/^(?:2[0-3]|[01][0-9]):[0-5][0-9]$/', $stopTime)) {
+                        $stopTime = null; 
+                    }
                 }
 
                 $route->stops()->create([
@@ -96,9 +106,9 @@ class CustomerServiceRouteStopController extends Controller
             }
 
             return redirect()->route('customers.service-routes.stops.index', [$customer, $route])
-                ->with('success', 'Duraklar Excel/CSV dosyasından başarıyla içe aktarıldı.');
+                ->with('success', 'Duraklar dosyadan başarıyla içe aktarıldı.');
         }
 
-        return back()->with('error', 'Dosya okunamadı.');
+        return back()->with('error', 'Dosya bulunamadı.');
     }
 }

@@ -79,6 +79,54 @@ class FuelStationController extends Controller
             ->with('success', 'Petrol istasyonu cari kaydı oluşturuldu.');
     }
 
+    private function recalculateStationFuels(FuelStation $station)
+    {
+        // 1. Reset all fuels for this station
+        \App\Models\Fuel::where('fuel_station_id', $station->id)->update([
+            'paid_amount' => 0,
+            'payment_status' => 'unpaid'
+        ]);
+
+        // 2. Get all payments ordered by date
+        $payments = $station->payments()->orderBy('payment_date')->orderBy('id')->get();
+
+        foreach ($payments as $payment) {
+            $amountToDistribute = (float) $payment->amount;
+            if ($amountToDistribute <= 0) continue;
+
+            $query = \App\Models\Fuel::where('fuel_station_id', $station->id)
+                ->where('payment_status', '!=', 'paid');
+
+            if (!empty($payment->start_date)) {
+                $query->whereDate('date', '>=', $payment->start_date);
+            }
+            if (!empty($payment->end_date)) {
+                $query->whereDate('date', '<=', $payment->end_date);
+            }
+
+            $unpaidFuels = $query->orderBy('date', 'asc')->orderBy('id', 'asc')->get();
+
+            foreach ($unpaidFuels as $fuel) {
+                if ($amountToDistribute <= 0) break;
+
+                $remainingDebt = max(0, $fuel->total_cost - $fuel->paid_amount);
+                if ($remainingDebt <= 0) continue;
+
+                $payAmount = min($amountToDistribute, $remainingDebt);
+                $fuel->paid_amount += $payAmount;
+                $amountToDistribute -= $payAmount;
+
+                if (round($fuel->paid_amount, 2) >= round($fuel->total_cost, 2)) {
+                    $fuel->payment_status = 'paid';
+                } else if ($fuel->paid_amount > 0) {
+                    $fuel->payment_status = 'partial';
+                }
+
+                $fuel->save();
+            }
+        }
+    }
+
     public function storePayment(Request $request)
     {
         abort_unless(auth()->user()->hasPermission('fuel_stations.create'), 403);
@@ -96,37 +144,8 @@ class FuelStationController extends Controller
         $payment = FuelStationPayment::create($validated);
         $payment->load('station');
 
-        // Fişlere ödeme dağıtımı
-        if (!empty($validated['start_date']) && !empty($validated['end_date'])) {
-            $amountToDistribute = (float) $validated['amount'];
-            
-            $unpaidFuels = \App\Models\Fuel::where('fuel_station_id', $validated['fuel_station_id'])
-                ->whereDate('date', '>=', $validated['start_date'])
-                ->whereDate('date', '<=', $validated['end_date'])
-                ->where('payment_status', '!=', 'paid')
-                ->orderBy('date', 'asc')
-                ->orderBy('id', 'asc')
-                ->get();
-                
-            foreach ($unpaidFuels as $fuel) {
-                if ($amountToDistribute <= 0) break;
-                
-                $remainingDebt = max(0, $fuel->total_cost - $fuel->paid_amount);
-                if ($remainingDebt <= 0) continue;
-                
-                $payAmount = min($amountToDistribute, $remainingDebt);
-                $fuel->paid_amount += $payAmount;
-                $amountToDistribute -= $payAmount;
-                
-                if (round($fuel->paid_amount, 2) >= round($fuel->total_cost, 2)) {
-                    $fuel->payment_status = 'paid';
-                } else if ($fuel->paid_amount > 0) {
-                    $fuel->payment_status = 'partial';
-                }
-                
-                $fuel->save();
-            }
-        }
+        // Yeniden hesapla
+        $this->recalculateStationFuels($payment->station);
 
         ActivityLogger::log(
             module: 'fuel_station_payment',
@@ -185,6 +204,9 @@ class FuelStationController extends Controller
         $payment->update($validated);
         $payment->refresh()->load('station');
 
+        // Yeniden hesapla
+        $this->recalculateStationFuels($payment->station);
+
         ActivityLogger::log(
             module: 'fuel_station_payment',
             action: 'updated',
@@ -216,7 +238,12 @@ class FuelStationController extends Controller
             oldValues: $oldValues
         );
 
+        $station = $payment->station;
         $payment->delete();
+
+        if ($station) {
+            $this->recalculateStationFuels($station);
+        }
 
         return redirect()
             ->route('fuel-stations.index')
@@ -237,6 +264,7 @@ class FuelStationController extends Controller
         ]);
 
         $createdPayments = [];
+        $stationIdsToRecalculate = [];
 
         foreach ($validated['payments'] as $paymentData) {
             $hasRequiredData =
@@ -258,6 +286,15 @@ class FuelStationController extends Controller
                 'start_date' => $paymentData['start_date'] ?? null,
                 'end_date' => $paymentData['end_date'] ?? null,
             ]);
+
+            $stationIdsToRecalculate[$paymentData['fuel_station_id']] = true;
+        }
+
+        foreach (array_keys($stationIdsToRecalculate) as $stationId) {
+            $station = \App\Models\FuelStation::find($stationId);
+            if ($station) {
+                $this->recalculateStationFuels($station);
+            }
         }
 
         ActivityLogger::log(

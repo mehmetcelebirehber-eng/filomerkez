@@ -126,9 +126,9 @@
 
     <div x-show="show" 
          x-transition.duration.300ms
-         class="relative mx-auto w-full max-w-lg transform overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200 transition-all">
+         class="relative mx-auto w-full max-w-lg transform overflow-visible rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200 transition-all">
         
-        <div class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-between">
+        <div class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-between rounded-t-3xl">
             <h3 class="text-lg font-bold text-slate-800">Yeni Evrak Yükle</h3>
             <button @click="show = false" class="text-slate-400 hover:text-slate-600">
                 ✖️
@@ -183,9 +183,9 @@
 
     <div x-show="show" 
          x-transition.duration.300ms
-         class="relative mx-auto w-full max-w-lg transform overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200 transition-all">
+         class="relative mx-auto w-full max-w-lg transform overflow-visible rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200 transition-all">
         
-        <div class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-between">
+        <div class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-between rounded-t-3xl">
             <h3 class="text-lg font-bold text-slate-800">Sistemden {{ $title }} Aktar</h3>
             <button @click="show = false" class="text-slate-400 hover:text-slate-600">
                 ✖️

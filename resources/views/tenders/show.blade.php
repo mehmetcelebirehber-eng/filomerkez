@@ -174,120 +174,156 @@
                 <form action="{{ route('tenders.records.store', $tender->id) }}" method="POST" enctype="multipart/form-data" id="tenderForm">
                     @csrf
                     
-                    <div class="grid grid-cols-12 gap-x-6 gap-y-8">
+                    <div class="space-y-8">
                         
                         <!-- 1. BÖLÜM: TEMEL BİLGİLER -->
-                        <div class="col-span-12">
-                            <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2 mb-4">1. Temel Bilgiler</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-4">
+                                <div class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">1</div>
+                                <h4 class="text-sm font-black text-slate-800">Temel Bilgiler</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 rounded-2xl bg-slate-50/50 p-5 ring-1 ring-slate-100">
                                 <div>
-                                    <label class="mb-1.5 block text-xs font-bold text-slate-700">İhale Tarihi <span class="text-rose-500">*</span></label>
-                                    <input type="date" name="tender_date" required class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2.5 px-4 text-sm font-medium focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10">
+                                    <label class="mb-2 block text-xs font-bold text-slate-700">İhale Tarihi <span class="text-rose-500">*</span></label>
+                                    <input type="date" name="tender_date" required class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 text-sm font-medium shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all">
                                 </div>
                                 <div>
-                                    <label class="mb-1.5 block text-xs font-bold text-slate-700">İKN Numarası</label>
-                                    <input type="text" name="tender_registration_number" placeholder="Örn: 2024/12345" class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2.5 px-4 text-sm font-medium focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10">
+                                    <label class="mb-2 block text-xs font-bold text-slate-700">İKN Numarası</label>
+                                    <input type="text" name="tender_registration_number" placeholder="Örn: 2024/12345" class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 text-sm font-medium shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all">
                                 </div>
                                 <div>
-                                    <label class="mb-1.5 block text-xs font-bold text-slate-700">Süre (Gün)</label>
-                                    <input type="number" name="duration_days" placeholder="Örn: 365" class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2.5 px-4 text-sm font-medium focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10">
+                                    <label class="mb-2 block text-xs font-bold text-slate-700">Süre (Gün)</label>
+                                    <input type="number" name="duration_days" placeholder="Örn: 365" class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 text-sm font-medium shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all">
                                 </div>
                             </div>
                         </div>
 
                         <!-- 2. BÖLÜM: ARAÇ DETAYLARI -->
-                        <div class="col-span-12">
-                            <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2 mb-4">2. Araç İhtiyaç Detayları</h4>
-                            <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
-                                <div class="col-span-2 md:col-span-2">
-                                    <label class="mb-1.5 block text-xs font-bold text-slate-700">Toplam Araç Adedi</label>
-                                    <input type="number" name="total_vehicles" class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2.5 px-4 text-sm font-medium focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10" placeholder="0">
+                        <div>
+                            <div class="flex items-center gap-2 mb-4">
+                                <div class="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-600">2</div>
+                                <h4 class="text-sm font-black text-slate-800">Araç İhtiyaç Detayları</h4>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50/50 p-5 ring-1 ring-slate-100 space-y-5">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                    <div>
+                                        <label class="mb-2 block text-xs font-bold text-slate-700">Toplam Araç Adedi</label>
+                                        <input type="number" name="total_vehicles" placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 text-sm font-medium shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="mb-2 block text-xs font-bold text-slate-700">Araç Model Şartı</label>
+                                        <input type="text" name="vehicle_model_requirement" placeholder="Örn: 2020 ve Üzeri" class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 text-sm font-medium shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                                    </div>
                                 </div>
-                                <div class="col-span-2 md:col-span-4">
-                                    <label class="mb-1.5 block text-xs font-bold text-slate-700">Araç Model Şartı</label>
-                                    <input type="text" name="vehicle_model_requirement" class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2.5 px-4 text-sm font-medium focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10" placeholder="Örn: 2020 ve Üzeri">
-                                </div>
-                                
-                                <div>
-                                    <label class="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase">Minibüs</label>
-                                    <input type="number" name="minibus_count" class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2 px-3 text-sm focus:border-blue-500" placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase">Midibüs</label>
-                                    <input type="number" name="midibus_count" class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2 px-3 text-sm focus:border-blue-500" placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase">Otobüs</label>
-                                    <input type="number" name="bus_count" class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2 px-3 text-sm focus:border-blue-500" placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase">Taksi / Oto.</label>
-                                    <input type="number" name="taxi_count" class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2 px-3 text-sm focus:border-blue-500" placeholder="0">
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-5 pt-5 border-t border-slate-200/60">
+                                    <div>
+                                        <label class="mb-2 block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Minibüs</label>
+                                        <input type="number" name="minibus_count" placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-4 text-sm font-medium shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                                    </div>
+                                    <div>
+                                        <label class="mb-2 block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Midibüs</label>
+                                        <input type="number" name="midibus_count" placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-4 text-sm font-medium shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                                    </div>
+                                    <div>
+                                        <label class="mb-2 block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Otobüs</label>
+                                        <input type="number" name="bus_count" placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-4 text-sm font-medium shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                                    </div>
+                                    <div>
+                                        <label class="mb-2 block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Taksi / Oto.</label>
+                                        <input type="number" name="taxi_count" placeholder="0" class="block w-full rounded-xl border-slate-200 bg-white py-2 px-4 text-sm font-medium shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- 3. BÖLÜM: MALİYET VE TEKLİFLER -->
-                        <div class="col-span-12">
-                            <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2 mb-4">3. Maliyet ve Teklifler</h4>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                <div>
-                                    <label class="mb-1.5 block text-xs font-bold text-slate-700">Yaklaşık Maliyet (₺)</label>
-                                    <input type="number" step="0.01" name="approximate_cost" class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2.5 px-4 text-sm font-medium focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10">
-                                </div>
-                                <div>
-                                    <label class="mb-1.5 block text-xs font-bold text-slate-700">Bizim Teklifimiz (₺)</label>
-                                    <input type="number" step="0.01" name="our_bid" class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2.5 px-4 text-sm font-bold text-blue-700 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10">
-                                </div>
+                        <div>
+                            <div class="flex items-center gap-2 mb-4">
+                                <div class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-600">3</div>
+                                <h4 class="text-sm font-black text-slate-800">Maliyet ve Teklifler</h4>
                             </div>
-
-                            <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 p-4 mb-6">
-                                <div class="flex items-center justify-between mb-3">
-                                    <h5 class="text-sm font-bold text-slate-700">İhaleye Giren Firmalar</h5>
-                                    <button type="button" onclick="addBidRow()" class="px-3 py-1.5 bg-white rounded-lg text-xs font-bold text-blue-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">+ Firma Ekle</button>
+                            <div class="rounded-2xl bg-slate-50/50 p-5 ring-1 ring-slate-100 space-y-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="mb-2 block text-xs font-bold text-slate-700">Yaklaşık Maliyet (₺)</label>
+                                        <div class="relative">
+                                            <input type="number" step="0.01" name="approximate_cost" class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 pl-9 text-sm font-bold shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all">
+                                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black">₺</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="mb-2 block text-xs font-bold text-slate-700">Bizim Teklifimiz (₺)</label>
+                                        <div class="relative">
+                                            <input type="number" step="0.01" name="our_bid" class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 pl-9 text-sm font-black text-blue-700 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all">
+                                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-blue-400 font-black">₺</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div id="bidsContainer" class="space-y-3">
-                                    <!-- Dynamic Bids Will Go Here -->
+
+                                <div class="rounded-xl bg-white ring-1 ring-slate-200 p-4">
+                                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                                        <h5 class="text-sm font-bold text-slate-700">İhaleye Giren Firmalar</h5>
+                                        <button type="button" onclick="addBidRow()" class="px-4 py-2 bg-slate-100 rounded-lg text-xs font-black text-blue-600 hover:bg-slate-200 transition-colors shadow-sm">+ Yeni Firma Ekle</button>
+                                    </div>
+                                    <div id="bidsContainer" class="space-y-3">
+                                        <!-- Dynamic Bids Will Go Here -->
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- 4. BÖLÜM: SONUÇ VE BELGELER -->
-                        <div class="col-span-12">
-                            <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2 mb-4">4. İhale Sonucu & Belgeler</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div class="col-span-1">
-                                    <label class="mb-1.5 block text-xs font-bold text-slate-700">Sonuç <span class="text-rose-500">*</span></label>
-                                    <select name="status" required class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2.5 px-4 text-sm font-medium focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10">
-                                        <option value="Değerlendirmede">Değerlendirmede</option>
-                                        <option value="Kazanıldı">Kazanıldı</option>
-                                        <option value="Kaybedildi">Kaybedildi</option>
-                                        <option value="İptal">İptal</option>
-                                    </select>
-                                </div>
-                                <div class="col-span-3">
-                                    <label class="mb-1.5 block text-xs font-bold text-slate-700">Kazanan Firma (Yukarıdan seçebilirsiniz)</label>
-                                    <div class="flex gap-2">
-                                        <select id="winnerSelect" onchange="applyWinner()" class="block w-1/3 rounded-xl border-slate-200 bg-slate-50 py-2.5 px-4 text-sm font-medium focus:border-blue-500 focus:bg-white">
-                                            <option value="">Firma Seçiniz...</option>
+                        <div>
+                            <div class="flex items-center gap-2 mb-4">
+                                <div class="flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-600">4</div>
+                                <h4 class="text-sm font-black text-slate-800">İhale Sonucu & Belgeler</h4>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50/50 p-5 ring-1 ring-slate-100 space-y-5">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="mb-2 block text-xs font-bold text-slate-700">İhale Sonucu <span class="text-rose-500">*</span></label>
+                                        <select name="status" required class="block w-full rounded-xl border-slate-200 bg-white py-2.5 px-4 text-sm font-bold shadow-sm focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all cursor-pointer">
+                                            <option value="Değerlendirmede">Değerlendirmede</option>
+                                            <option value="Kazanıldı">Kazanıldı</option>
+                                            <option value="Kaybedildi">Kaybedildi</option>
+                                            <option value="İptal">İptal</option>
                                         </select>
-                                        <input type="text" id="winning_company" name="winning_company" placeholder="Firma Adı" class="block w-1/3 rounded-xl border-slate-200 bg-slate-50 py-2.5 px-4 text-sm font-medium focus:border-blue-500">
-                                        <input type="number" step="0.01" id="winning_amount" name="winning_amount" placeholder="Toplam Tutar (₺)" class="block w-1/3 rounded-xl border-slate-200 bg-slate-50 py-2.5 px-4 text-sm font-medium focus:border-blue-500">
-                                        <input type="number" step="0.01" id="winning_unit_price" name="winning_unit_price" placeholder="Birim Fiyat (₺)" class="block w-1/3 rounded-xl border-slate-200 bg-slate-50 py-2.5 px-4 text-sm font-medium focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="mb-2 block text-xs font-bold text-slate-700">Şartname / İhale Dosyası (PDF)</label>
+                                        <input type="file" name="document" accept=".pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-100 file:text-amber-700 hover:file:bg-amber-200 file:transition-colors file:cursor-pointer bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer">
                                     </div>
                                 </div>
 
-                                <div class="col-span-4 mt-2">
-                                    <label class="mb-1.5 block text-xs font-bold text-slate-700">Şartname / İhale Dosyası (PDF)</label>
-                                    <input type="file" name="document" accept=".pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors cursor-pointer">
+                                <div class="mt-2 rounded-xl bg-amber-50/50 ring-1 ring-amber-100 p-4 border-l-4 border-l-amber-400">
+                                    <label class="mb-3 block text-sm font-black text-amber-900">Kazanan Firma Detayları</label>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div>
+                                            <label class="mb-1 block text-[10px] font-bold text-slate-500 uppercase">Hızlı Seçim</label>
+                                            <select id="winnerSelect" onchange="applyWinner()" class="block w-full rounded-lg border-slate-200 bg-white py-2 px-3 text-xs font-medium shadow-sm focus:border-amber-500 cursor-pointer">
+                                                <option value="">Tekliflerden Seç...</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="mb-1 block text-[10px] font-bold text-slate-500 uppercase">Firma Adı</label>
+                                            <input type="text" id="winning_company" name="winning_company" placeholder="Firma Adı" class="block w-full rounded-lg border-slate-200 bg-white py-2 px-3 text-xs font-medium shadow-sm focus:border-amber-500">
+                                        </div>
+                                        <div>
+                                            <label class="mb-1 block text-[10px] font-bold text-slate-500 uppercase">Toplam Tutar (₺)</label>
+                                            <input type="number" step="0.01" id="winning_amount" name="winning_amount" placeholder="0.00" class="block w-full rounded-lg border-slate-200 bg-white py-2 px-3 text-xs font-bold text-emerald-600 shadow-sm focus:border-amber-500">
+                                        </div>
+                                        <div>
+                                            <label class="mb-1 block text-[10px] font-bold text-slate-500 uppercase">Birim Fiyat (₺)</label>
+                                            <input type="number" step="0.01" id="winning_unit_price" name="winning_unit_price" placeholder="0.00" class="block w-full rounded-lg border-slate-200 bg-white py-2 px-3 text-xs font-medium shadow-sm focus:border-amber-500">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                     </div>
                     
-                    <div class="mt-8 flex justify-end gap-3 pt-6 border-t border-slate-100 bg-slate-50/50 -mx-6 -mb-6 px-6 pb-6 rounded-b-3xl">
+                    <div class="mt-8 flex justify-end gap-3 pt-6 border-t border-slate-100 bg-slate-50/80 -mx-6 -mb-6 px-6 pb-6 rounded-b-3xl">
                         <button type="button" onclick="document.getElementById('recordModal').classList.add('hidden')" class="px-6 py-3 text-sm font-bold text-slate-600 bg-white shadow-sm ring-1 ring-slate-200 rounded-xl hover:bg-slate-50 active:scale-95 transition-all">İptal Et</button>
                         <button type="submit" class="px-8 py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:shadow-lg hover:shadow-blue-500/30 active:scale-95 transition-all">Dosyayı Kaydet</button>
                     </div>

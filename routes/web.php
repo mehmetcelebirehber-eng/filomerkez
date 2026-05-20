@@ -556,6 +556,20 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:customers.view')
         ->name('customers.company-documents.destroy');
 
+    // Güzergah Araç/Şoför Evrakları
+    Route::get('/customers/{customer}/service-routes/{route}/documents', [\App\Http\Controllers\CustomerRouteDocumentController::class, 'index'])
+        ->middleware('permission:customers.view')
+        ->name('customers.service-routes.documents.index');
+    Route::post('/customers/{customer}/service-routes/{route}/documents', [\App\Http\Controllers\CustomerRouteDocumentController::class, 'store'])
+        ->middleware('permission:customers.view')
+        ->name('customers.service-routes.documents.store');
+    Route::post('/customers/{customer}/service-routes/{route}/documents/import', [\App\Http\Controllers\CustomerRouteDocumentController::class, 'importFromSource'])
+        ->middleware('permission:customers.view')
+        ->name('customers.service-routes.documents.import');
+    Route::delete('/customers/{customer}/service-routes/{route}/documents/{document}', [\App\Http\Controllers\CustomerRouteDocumentController::class, 'destroy'])
+        ->middleware('permission:customers.view')
+        ->name('customers.service-routes.documents.destroy');
+
     Route::resource('customers', CustomerController::class)
         ->middleware('permission:customers.view');
 

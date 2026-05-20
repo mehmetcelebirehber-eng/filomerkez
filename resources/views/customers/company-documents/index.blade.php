@@ -186,12 +186,80 @@
                     
                     <div>
                         <label class="mb-1.5 block text-sm font-semibold text-slate-700">Evrak Seçin</label>
-                        <select name="document_id" required class="block w-full rounded-xl border-0 py-2.5 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
-                            <option value="">-- Seçiniz --</option>
-                            @foreach($companyDocuments as $cDoc)
-                                <option value="{{ $cDoc->id }}">{{ $cDoc->document_name }} {{ $cDoc->end_date ? '(Bitiş: '.$cDoc->end_date->format('d.m.Y').')' : '' }}</option>
-                            @endforeach
-                        </select>
+                        
+                        <div class="relative" x-data="{
+                            search: '',
+                            open: false,
+                            selectedId: '',
+                            selectedLabel: '-- Evrak Arayın veya Seçin --',
+                            options: [
+                                @foreach($companyDocuments as $cDoc)
+                                    @php
+                                        $labelText = $cDoc->document_name . ($cDoc->end_date ? ' (Bitiş: '.$cDoc->end_date->format('d.m.Y').')' : '');
+                                    @endphp
+                                    { id: '{{ $cDoc->id }}', label: '{{ addslashes($labelText) }}' },
+                                @endforeach
+                            ],
+                            get filteredOptions() {
+                                if (this.search.trim() === '') return this.options;
+                                return this.options.filter(opt => opt.label.toLowerCase().includes(this.search.toLowerCase()));
+                            },
+                            selectOption(opt) {
+                                this.selectedId = opt.id;
+                                this.selectedLabel = opt.label;
+                                this.open = false;
+                                this.search = '';
+                            }
+                        }">
+                            <input type="hidden" name="document_id" x-model="selectedId" required>
+
+                            <button type="button" @click="open = !open" 
+                                class="flex w-full items-center justify-between rounded-xl border border-slate-300 bg-white py-2.5 px-4 text-left text-sm text-slate-900 shadow-sm hover:bg-slate-50 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-600/20">
+                                <span x-text="selectedLabel" class="block truncate font-medium"></span>
+                                <span class="pointer-events-none ml-2 flex items-center text-slate-400">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </span>
+                            </button>
+
+                            <div x-show="open" 
+                                 @click.away="open = false"
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 class="absolute z-50 mt-1 w-full rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5"
+                                 style="display: none;">
+                                
+                                <div class="p-2 border-b border-slate-100 sticky top-0 bg-white rounded-t-xl z-10">
+                                    <div class="relative">
+                                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                        </div>
+                                        <input type="text" x-model="search" placeholder="Evrak adı ara..." 
+                                            class="block w-full rounded-lg border-0 py-2 pl-9 pr-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
+                                    </div>
+                                </div>
+                                
+                                <ul class="max-h-60 overflow-auto py-1 text-sm text-slate-700">
+                                    <template x-for="option in filteredOptions" :key="option.id">
+                                        <li @click="selectOption(option)" 
+                                            class="relative cursor-pointer select-none py-2.5 pl-4 pr-9 hover:bg-indigo-50 hover:text-indigo-900 transition-colors"
+                                            :class="{'bg-indigo-50 text-indigo-900 font-bold': selectedId === option.id}">
+                                            <span x-text="option.label" class="block truncate"></span>
+                                            
+                                            <span x-show="selectedId === option.id" class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                            </span>
+                                        </li>
+                                    </template>
+                                    <li x-show="filteredOptions.length === 0" class="relative cursor-default select-none py-3 px-4 text-slate-500 text-center italic">
+                                        Aramanızla eşleşen sonuç bulunamadı.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

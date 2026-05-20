@@ -35,38 +35,9 @@
                     </div>
 
                     <div>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                                Müşteri Portalı
-                            </span>
-
-                            <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                                Aktif Erişim
-                            </span>
-                        </div>
-
-                        <h1 class="mt-3 text-3xl font-black tracking-tight text-slate-900 md:text-4xl">
+                        <h1 class="text-3xl font-black tracking-tight text-transparent md:text-5xl bg-clip-text bg-[linear-gradient(110deg,#0f172a,45%,#94a3b8,55%,#0f172a)] bg-[length:200%_auto] animate-text-shine py-2">
                             {{ $customer->company_name }}
                         </h1>
-
-                        <p class="mt-2 text-sm font-medium text-slate-500 md:text-base">
-                            {{ $customer->company_title ?: 'Firma ünvanı belirtilmemiş.' }}
-                        </p>
-
-                        <div class="mt-4 flex flex-wrap gap-5 text-sm text-slate-500">
-                            <div>
-                                <span class="font-semibold text-slate-700">Yetkili:</span>
-                                {{ $customer->authorized_person ?: '-' }}
-                            </div>
-                            <div>
-                                <span class="font-semibold text-slate-700">Telefon:</span>
-                                {{ $customer->authorized_phone ?: '-' }}
-                            </div>
-                            <div>
-                                <span class="font-semibold text-slate-700">E-Posta:</span>
-                                {{ $customer->email ?: '-' }}
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -352,13 +323,16 @@
                                             </div>
                                         </div>
 
-                                        <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                                        @php
+                                            $isShift = $route->service_type === 'shift';
+                                        @endphp
+                                        <div class="mt-4 grid grid-cols-1 gap-4 {{ $isShift ? 'md:grid-cols-2 xl:grid-cols-4' : 'md:grid-cols-2' }}">
                                             <div class="rounded-2xl bg-white px-4 py-4">
                                                 <div class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
                                                     Sabah Seferini Yapacak Araç
                                                 </div>
                                                 <div class="mt-2 text-sm font-semibold text-slate-900">
-                                                    {{ $route->service_type !== 'shift' ? ($route->morningVehicle?->plate ?? '-') : '-' }}
+                                                    {{ !$isShift ? ($route->morningVehicle?->plate ?? '-') : '-' }}
                                                 </div>
                                             </div>
 
@@ -367,27 +341,38 @@
                                                     Akşam Seferini Yapacak Araç
                                                 </div>
                                                 <div class="mt-2 text-sm font-semibold text-slate-900">
-                                                    {{ $route->service_type !== 'shift' ? ($route->eveningVehicle?->plate ?? '-') : '-' }}
+                                                    {{ !$isShift ? ($route->eveningVehicle?->plate ?? '-') : '-' }}
                                                 </div>
                                             </div>
 
-                                            <div class="rounded-2xl bg-white px-4 py-4">
-                                                <div class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-                                                    Vardiya Toplama Aracı
+                                            @if($isShift)
+                                                <div class="rounded-2xl bg-white px-4 py-4">
+                                                    <div class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+                                                        Vardiya Toplama Aracı
+                                                    </div>
+                                                    <div class="mt-2 text-sm font-semibold text-slate-900">
+                                                        {{ $route->morningVehicle?->plate ?? '-' }}
+                                                    </div>
                                                 </div>
-                                                <div class="mt-2 text-sm font-semibold text-slate-900">
-                                                    {{ $route->service_type === 'shift' ? ($route->morningVehicle?->plate ?? '-') : '-' }}
-                                                </div>
-                                            </div>
 
-                                            <div class="rounded-2xl bg-white px-4 py-4">
-                                                <div class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-                                                    Vardiya Dağıtım Aracı
+                                                <div class="rounded-2xl bg-white px-4 py-4">
+                                                    <div class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+                                                        Vardiya Dağıtım Aracı
+                                                    </div>
+                                                    <div class="mt-2 text-sm font-semibold text-slate-900">
+                                                        {{ $route->eveningVehicle?->plate ?? '-' }}
+                                                    </div>
                                                 </div>
-                                                <div class="mt-2 text-sm font-semibold text-slate-900">
-                                                    {{ $route->service_type === 'shift' ? ($route->eveningVehicle?->plate ?? '-') : '-' }}
-                                                </div>
-                                            </div>
+                                            @endif
+                                        </div>
+                                        
+                                        <!-- Servis Durakları Butonu -->
+                                        <div class="mt-4 flex justify-end">
+                                            <a href="{{ route('customer.portal.dashboard.stops.export', $route->id) }}" class="inline-flex relative items-center gap-2 rounded-2xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition-all hover:bg-indigo-700 hover:shadow-xl hover:-translate-y-0.5 active:scale-95 group overflow-hidden">
+                                                <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:animate-shimmer"></div>
+                                                <span class="text-lg">📍</span>
+                                                <span>Servis Durakları (Excel İndir)</span>
+                                            </a>
                                         </div>
                                     </div>
                                 </div>

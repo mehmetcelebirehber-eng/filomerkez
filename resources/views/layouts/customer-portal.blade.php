@@ -6,6 +6,22 @@
     <title>{{ ($title ?? '') ? $title . ' • ' : '' }}Müşteri Portalı</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+        .animate-shimmer {
+            animation: shimmer 2s infinite;
+        }
+        @keyframes text-shine {
+            to {
+                background-position: 200% center;
+            }
+        }
+        .animate-text-shine {
+            animation: text-shine 3s linear infinite;
+        }
+    </style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased">
 @php
@@ -35,8 +51,10 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
-                            class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
-                        Çıkış Yap
+                            class="relative flex items-center gap-2 rounded-2xl bg-rose-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-500/30 transition-all hover:bg-rose-600 hover:shadow-xl hover:shadow-rose-600/40 active:scale-95 group overflow-hidden">
+                        <span class="absolute inset-0 rounded-2xl ring-2 ring-rose-500 ring-offset-2 animate-pulse pointer-events-none opacity-50"></span>
+                        <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:animate-shimmer"></div>
+                        <span>👋</span> Çıkış Yap
                     </button>
                 </form>
             </div>

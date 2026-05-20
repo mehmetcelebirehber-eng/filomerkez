@@ -35,10 +35,10 @@ class JointVenturePortalController extends Controller
 
         $type = $request->get('type', 'vehicle'); // vehicle or driver
         $isVehicle = $type === 'vehicle';
+        $documentableType = 'route_' . $type;
 
-        $documents = Document::where('documentable_type', CustomerServiceRoute::class)
+        $documents = Document::where('documentable_type', $documentableType)
             ->where('documentable_id', $route->id)
-            ->where('source_type', $type) // Bu güzergaha araç veya şoför evrakı olarak eklenenler
             ->get();
 
         return view('joint-ventures.portal.documents', compact('jv', 'route', 'type', 'documents', 'isVehicle'));
@@ -64,9 +64,9 @@ class JointVenturePortalController extends Controller
         $path = $file->store('customer_documents', 'public');
 
         Document::create([
-            'documentable_type' => CustomerServiceRoute::class,
+            'company_id' => $jv->company_id,
+            'documentable_type' => 'route_' . $request->type,
             'documentable_id' => $route->id,
-            'source_type' => $request->type, // Hangi modüle ait olduğunu belirtmek için (vehicle/driver)
             'document_name' => $request->document_name,
             'document_type' => $request->document_type,
             'end_date' => $request->end_date,
@@ -85,7 +85,7 @@ class JointVenturePortalController extends Controller
             ->firstOrFail();
 
         // Evrak bu güzergaha mı ait?
-        if ($document->documentable_type !== CustomerServiceRoute::class || $document->documentable_id !== $route->id) {
+        if (!in_array($document->documentable_type, ['route_vehicle', 'route_driver']) || $document->documentable_id !== $route->id) {
             abort(403);
         }
 

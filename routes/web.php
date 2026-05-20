@@ -589,6 +589,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/customers/{customer}/service-routes/{route}/stops/import', [\App\Http\Controllers\CustomerServiceRouteStopController::class, 'import'])
         ->middleware('permission:customers.view')
         ->name('customers.service-routes.stops.import');
+    Route::get('/customers/{customer}/service-routes/{route}/stops/export', [\App\Http\Controllers\CustomerServiceRouteStopController::class, 'export'])
+        ->middleware('permission:customers.view')
+        ->name('customers.service-routes.stops.export');
 
     Route::resource('service-routes', ServiceRouteController::class)
         ->middleware('permission:service_routes.view');

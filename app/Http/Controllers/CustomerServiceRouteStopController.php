@@ -111,4 +111,19 @@ class CustomerServiceRouteStopController extends Controller
 
         return back()->with('error', 'Dosya bulunamadı.');
     }
+
+    public function export(Customer $customer, CustomerServiceRoute $route)
+    {
+        if (!auth()->user()->hasPermission('customers.view')) {
+            abort(403);
+        }
+
+        $stops = $route->stops;
+        $fileName = \Illuminate\Support\Str::slug($route->route_name) . '-duraklari.xlsx';
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\CustomerRouteStopsExport($stops, $route->route_name),
+            $fileName
+        );
+    }
 }

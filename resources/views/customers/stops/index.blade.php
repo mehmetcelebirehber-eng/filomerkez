@@ -19,8 +19,12 @@
                 <i class="fi fi-rr-arrow-small-left text-lg"></i>
                 Müşteriye Dön
             </a>
+            <a href="{{ route('customers.service-routes.stops.export', [$customer->id, $route->id]) }}" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-50 px-5 py-2.5 text-sm font-bold text-indigo-700 shadow-sm ring-1 ring-indigo-200 transition-all duration-300 hover:bg-indigo-100 hover:shadow-md active:scale-95">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Chart%20Increasing%20with%20Yen.png" alt="Export" class="h-5 w-5 drop-shadow-sm" />
+                Excel İndir
+            </a>
             <button onclick="document.getElementById('importModal').classList.remove('hidden')" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-50 px-5 py-2.5 text-sm font-bold text-emerald-700 shadow-sm ring-1 ring-emerald-200 transition-all duration-300 hover:bg-emerald-100 hover:shadow-md active:scale-95">
-                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Page%20with%20Curl.png" alt="Excel" class="h-5 w-5" />
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Page%20with%20Curl.png" alt="Excel" class="h-5 w-5 drop-shadow-sm" />
                 Excel'den Aktar
             </button>
         </div>

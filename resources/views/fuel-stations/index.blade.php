@@ -39,6 +39,59 @@
             payment_method: 'nakit',
             notes: ''
         },
+        
+        calculatedDebt: {
+            isLoading: false,
+            show: false,
+            grossTotal: 0,
+            discountTotal: 0,
+            netTotal: 0,
+            paidTotal: 0,
+            netPayable: 0
+        },
+
+        init() {
+            this.$watch('paymentForm.fuel_station_id', () => this.calculateDebt());
+            this.$watch('paymentForm.start_date', () => this.calculateDebt());
+            this.$watch('paymentForm.end_date', () => this.calculateDebt());
+        },
+
+        async calculateDebt() {
+            if (!this.paymentForm.fuel_station_id || !this.paymentForm.start_date || !this.paymentForm.end_date) {
+                this.calculatedDebt.show = false;
+                return;
+            }
+            
+            if (this.paymentForm.start_date > this.paymentForm.end_date) {
+                this.calculatedDebt.show = false;
+                return;
+            }
+
+            this.calculatedDebt.isLoading = true;
+            this.calculatedDebt.show = true;
+            
+            try {
+                const response = await fetch(`/fuel-stations/calculate-debt?fuel_station_id=${this.paymentForm.fuel_station_id}&start_date=${this.paymentForm.start_date}&end_date=${this.paymentForm.end_date}`);
+                if (!response.ok) throw new Error('API Error');
+                
+                const data = await response.json();
+                this.calculatedDebt.grossTotal = data.gross_total;
+                this.calculatedDebt.discountTotal = data.discount_total;
+                this.calculatedDebt.netTotal = data.net_total;
+                this.calculatedDebt.paidTotal = data.paid_total;
+                this.calculatedDebt.netPayable = data.net_payable;
+                
+                // Automatically set amount to net payable if empty or unchanged from previous calc
+                if (!this.paymentForm.amount || this.paymentMode === 'create') {
+                    this.paymentForm.amount = data.net_payable.toFixed(2);
+                }
+            } catch (error) {
+                console.error('Borç hesaplanırken hata oluştu:', error);
+                this.calculatedDebt.show = false;
+            } finally {
+                this.calculatedDebt.isLoading = false;
+            }
+        },
 
         resetPaymentForm() {
             this.paymentMode = 'create';
@@ -56,6 +109,7 @@
                 payment_method: 'nakit',
                 notes: ''
             };
+            this.calculatedDebt.show = false;
         },
 
         openCreatePaymentModal(stationId = '') {
@@ -559,6 +613,35 @@
                                 <div>
                                     <label class="mb-2 block text-sm font-semibold text-slate-700">Bitiş Tarihi</label>
                                     <input type="date" name="end_date" x-model="paymentForm.end_date" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-800 shadow-sm outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100">
+                                </div>
+
+                                <!-- Hesaplanan Borç Özeti -->
+                                <div class="md:col-span-2" x-show="calculatedDebt.show" x-transition x-cloak>
+                                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 relative overflow-hidden">
+                                        <div x-show="calculatedDebt.isLoading" class="absolute inset-0 bg-white/70 backdrop-blur-[2px] flex items-center justify-center z-10">
+                                            <div class="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600"></div>
+                                        </div>
+
+                                        <h4 class="mb-3 text-sm font-bold text-slate-800">Seçili Tarihler Arası Borç Özeti</h4>
+                                        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                                            <div>
+                                                <div class="text-xs text-slate-500">Brüt Tutar</div>
+                                                <div class="font-semibold text-slate-700" x-text="`${calculatedDebt.grossTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺`"></div>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs text-slate-500">İskonto</div>
+                                                <div class="font-semibold text-slate-700" x-text="`${calculatedDebt.discountTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺`"></div>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs text-emerald-600">Ödenen Toplam</div>
+                                                <div class="font-bold text-emerald-700" x-text="`${calculatedDebt.paidTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺`"></div>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs text-blue-600">Net Ödenecek Kalan</div>
+                                                <div class="font-bold text-blue-700" x-text="`${calculatedDebt.netPayable.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺`"></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div>

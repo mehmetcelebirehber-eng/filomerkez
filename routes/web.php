@@ -470,6 +470,10 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:fuels.view')
         ->name('fuel-stations.payments.store');
 
+    Route::get('/fuel-stations/calculate-debt', [FuelStationController::class, 'calculateDebt'])
+        ->middleware('permission:fuels.view')
+        ->name('fuel-stations.calculate-debt');
+
     Route::get('/fuel-stations/payments/{payment}', [FuelStationController::class, 'showPayment'])
         ->middleware('permission:fuels.view')
         ->name('fuel-stations.payments.show');

@@ -96,6 +96,38 @@ class FuelStationController extends Controller
         $payment = FuelStationPayment::create($validated);
         $payment->load('station');
 
+        // Fişlere ödeme dağıtımı
+        if (!empty($validated['start_date']) && !empty($validated['end_date'])) {
+            $amountToDistribute = (float) $validated['amount'];
+            
+            $unpaidFuels = \App\Models\Fuel::where('fuel_station_id', $validated['fuel_station_id'])
+                ->whereDate('date', '>=', $validated['start_date'])
+                ->whereDate('date', '<=', $validated['end_date'])
+                ->where('payment_status', '!=', 'paid')
+                ->orderBy('date', 'asc')
+                ->orderBy('id', 'asc')
+                ->get();
+                
+            foreach ($unpaidFuels as $fuel) {
+                if ($amountToDistribute <= 0) break;
+                
+                $remainingDebt = max(0, $fuel->total_cost - $fuel->paid_amount);
+                if ($remainingDebt <= 0) continue;
+                
+                $payAmount = min($amountToDistribute, $remainingDebt);
+                $fuel->paid_amount += $payAmount;
+                $amountToDistribute -= $payAmount;
+                
+                if (round($fuel->paid_amount, 2) >= round($fuel->total_cost, 2)) {
+                    $fuel->payment_status = 'paid';
+                } else if ($fuel->paid_amount > 0) {
+                    $fuel->payment_status = 'partial';
+                }
+                
+                $fuel->save();
+            }
+        }
+
         ActivityLogger::log(
             module: 'fuel_station_payment',
             action: 'created',
@@ -115,7 +147,7 @@ class FuelStationController extends Controller
 
         return redirect()
             ->route('fuel-stations.index')
-            ->with('success', 'İstasyon ödemesi başarıyla işlendi.');
+            ->with('success', 'İstasyon ödemesi başarıyla işlendi ve ilgili fişlere yansıtıldı.');
     }
 
     public function showPayment(FuelStationPayment $payment)
@@ -280,5 +312,36 @@ class FuelStationController extends Controller
             'startDate',
             'endDate'
         ));
+    }
+
+    public function calculateDebt(Request $request)
+    {
+        $request->validate([
+            'fuel_station_id' => 'required|exists:fuel_stations,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        $station = FuelStation::findOrFail($request->fuel_station_id);
+        
+        $fuels = $station->fuels()
+            ->whereDate('date', '>=', $request->start_date)
+            ->whereDate('date', '<=', $request->end_date)
+            ->get();
+
+        $grossTotal = (float) $fuels->sum('gross_total_cost');
+        $discountTotal = (float) $fuels->sum('discount_amount');
+        $netTotal = (float) $fuels->sum('total_cost');
+
+        $paidTotal = (float) $fuels->sum('paid_amount');
+        $netPayable = max(0, $netTotal - $paidTotal);
+
+        return response()->json([
+            'gross_total' => $grossTotal,
+            'discount_total' => $discountTotal,
+            'net_total' => $netTotal,
+            'paid_total' => $paidTotal,
+            'net_payable' => $netPayable,
+        ]);
     }
 }

@@ -26,6 +26,8 @@ class Fuel extends Model
         'gross_total_cost',
         'discount_amount',
         'total_cost',
+        'payment_status',
+        'paid_amount',
         'km',
         'notes',
     ];
@@ -37,6 +39,7 @@ class Fuel extends Model
         'gross_total_cost' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'total_cost' => 'decimal:2',
+        'paid_amount' => 'decimal:2',
     ];
 
     public function company(): BelongsTo

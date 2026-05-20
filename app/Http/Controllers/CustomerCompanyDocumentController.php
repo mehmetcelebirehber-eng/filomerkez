@@ -39,8 +39,15 @@ class CustomerCompanyDocumentController extends Controller
         $request->validate([
             'document_name' => 'required|string|max:255',
             'document_type' => 'nullable|string|max:255',
-            'file' => 'required|file|max:10240', // 10MB max
+            'file' => 'required|file|max:20480', // 20MB max
             'end_date' => 'nullable|date',
+        ], [
+            'document_name.required' => 'Evrak adı zorunludur.',
+            'document_name.max' => 'Evrak adı en fazla 255 karakter olabilir.',
+            'file.required' => 'Lütfen bir dosya seçin.',
+            'file.file' => 'Seçilen öğe geçerli bir dosya olmalıdır.',
+            'file.max' => 'Yüklemek istediğiniz dosya boyutu çok büyük. Lütfen en fazla 20MB (veya sunucu limitiniz kadar) boyutunda bir dosya seçin.',
+            'file.uploaded' => 'Dosya yüklenirken sunucu limitlerine (upload_max_filesize) takıldı. Daha küçük bir dosya seçin veya sunucu limitini artırın.',
         ]);
 
         $filePath = null;

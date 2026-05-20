@@ -95,7 +95,7 @@
 
                     <div class="mt-5 pt-4 border-t border-slate-200/60">
                         @if($doc->file_path)
-                            <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 transition-all">
+                            <a href="{{ url('storage/' . $doc->file_path) }}" target="_blank" class="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 transition-all">
                                 <span>👁️</span> Görüntüle / İndir
                             </a>
                         @else

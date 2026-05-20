@@ -84,4 +84,9 @@ class CustomerServiceRoute extends Model
     {
         return $this->service_type === 'evening';
     }
+
+    public function stops()
+    {
+        return $this->hasMany(CustomerRouteStop::class, 'customer_service_route_id')->orderBy('stop_order');
+    }
 }

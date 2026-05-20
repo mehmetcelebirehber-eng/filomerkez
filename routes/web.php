@@ -580,6 +580,16 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:customers.view')
         ->name('customers.service-routes.destroy');
 
+    Route::get('/customers/{customer}/service-routes/{route}/stops', [\App\Http\Controllers\CustomerServiceRouteStopController::class, 'index'])
+        ->middleware('permission:customers.view')
+        ->name('customers.service-routes.stops.index');
+    Route::post('/customers/{customer}/service-routes/{route}/stops', [\App\Http\Controllers\CustomerServiceRouteStopController::class, 'store'])
+        ->middleware('permission:customers.view')
+        ->name('customers.service-routes.stops.store');
+    Route::post('/customers/{customer}/service-routes/{route}/stops/import', [\App\Http\Controllers\CustomerServiceRouteStopController::class, 'import'])
+        ->middleware('permission:customers.view')
+        ->name('customers.service-routes.stops.import');
+
     Route::resource('service-routes', ServiceRouteController::class)
         ->middleware('permission:service_routes.view');
 

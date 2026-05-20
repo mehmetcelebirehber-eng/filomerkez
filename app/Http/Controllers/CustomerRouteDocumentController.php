@@ -128,7 +128,7 @@ class CustomerRouteDocumentController extends Controller
             abort(403);
         }
 
-        if (!in_array($document->documentable_type, ['route_vehicle', 'route_driver']) || $document->documentable_id !== $route->id) {
+        if (!in_array($document->documentable_type, ['route_vehicle', 'route_driver']) || $document->documentable_id != $route->id) {
             abort(404);
         }
 

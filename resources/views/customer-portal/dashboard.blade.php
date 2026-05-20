@@ -130,6 +130,11 @@
                 <span>📄</span>
                 <span>Sözleşmeler</span>
             </a>
+
+            <a href="{{ route('customer.portal.dashboard', ['tab' => 'documents']) }}" class="{{ $tabClass('documents') }}">
+                <span>📂</span>
+                <span>Belge ve Dökümanlar</span>
+            </a>
         </div>
     </div>
 
@@ -555,7 +560,64 @@
                 </div>
             </div>
         </div>
-    @endif
+    @elseif($activeTab === 'documents')
+        <div>
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-black tracking-tight text-slate-800">
+                        Araç ve Şoför Evrakları
+                    </h3>
+                    <p class="mt-1 text-sm text-slate-500">
+                        Size hizmet veren araç ve şoförlerin yasal belgelerini buradan görüntüleyebilirsiniz.
+                    </p>
+                </div>
+            </div>
 
+            @if($serviceRoutes && $serviceRoutes->count() > 0)
+                <div class="space-y-4">
+                    <!-- Servis Güzergahları Listesi -->
+                    @foreach($serviceRoutes->sortBy('route_name', SORT_NATURAL) as $route)
+                        <div class="group relative flex flex-col md:flex-row md:items-center justify-between gap-4 overflow-hidden rounded-[24px] border border-slate-200/60 bg-white p-5 shadow-lg shadow-slate-200/40 transition-all hover:shadow-xl hover:border-indigo-200 hover:ring-4 hover:ring-indigo-50/50">
+                            <div class="absolute -left-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br from-indigo-50 to-blue-50 blur-2xl transition-all group-hover:bg-indigo-100/50"></div>
+                            
+                            <div class="relative flex items-center gap-4">
+                                <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-[18px] text-2xl text-white shadow-md shadow-indigo-500/20" style="background: linear-gradient(135deg, #6366f1, #06b6d4);">
+                                    🚐
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-1">
+                                        SERVİS GÜZERGAH ADI
+                                    </div>
+                                    <h4 class="text-lg font-black text-slate-800">
+                                        {{ $route->route_name }}
+                                    </h4>
+                                </div>
+                            </div>
+
+                            <div class="relative flex flex-wrap items-center gap-3">
+                                <a href="{{ route('customer.portal.documents', ['route' => $route->id, 'type' => 'vehicle']) }}" class="relative inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-95 group/btn overflow-hidden" style="background: linear-gradient(135deg, #fbbf24, #ea580c); box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.3);">
+                                    <span class="text-lg drop-shadow-md relative z-10">📄</span>
+                                    <span class="relative z-10" style="color: white !important;">Araç Evrakları</span>
+                                </a>
+                                
+                                <a href="{{ route('customer.portal.documents', ['route' => $route->id, 'type' => 'driver']) }}" class="relative inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-95 group/btn overflow-hidden" style="background: linear-gradient(135deg, #10b981, #0f766e); box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);">
+                                    <span class="text-lg drop-shadow-md relative z-10">👨‍✈️</span>
+                                    <span class="relative z-10" style="color: white !important;">Şoför Evrakları</span>
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="rounded-[32px] border border-dashed border-slate-300 bg-slate-50 py-16 text-center">
+                    <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-white text-4xl shadow-sm ring-1 ring-slate-200">
+                        📭
+                    </div>
+                    <h3 class="mt-4 text-lg font-bold text-slate-900">Güzergah Bulunamadı</h3>
+                    <p class="mt-2 text-sm text-slate-500">Size henüz bir servis güzergahı tanımlanmamış.</p>
+                </div>
+            @endif
+        </div>
+    @endif
 </div>
 @endsection

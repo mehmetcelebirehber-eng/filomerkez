@@ -10,9 +10,15 @@
             </h2>
             <p class="text-sm text-slate-500 mt-1">Bu güzergaha ait sıralı durak ve saat bilgileri</p>
         </div>
-        <a href="{{ route('customer.portal.dashboard', ['tab' => 'services']) }}" class="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-600 shadow-sm hover:bg-slate-200 transition-all active:scale-95">
-            <span>⬅️</span> Geri Dön
-        </a>
+        <div class="flex items-center gap-3">
+            <a href="{{ route('customer.portal.dashboard.stops.export', $route->id) }}" class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-indigo-700 transition-all active:scale-95 group overflow-hidden relative">
+                <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:animate-shimmer"></div>
+                <span>📥</span> Excel İle İndir
+            </a>
+            <a href="{{ route('customer.portal.dashboard', ['tab' => 'services']) }}" class="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-600 shadow-sm hover:bg-slate-200 transition-all active:scale-95">
+                <span>⬅️</span> Geri Dön
+            </a>
+        </div>
     </div>
 
     <div class="rounded-3xl bg-white p-6 shadow-xl shadow-slate-200/40 ring-1 ring-slate-100">

@@ -27,10 +27,10 @@
                     </div>
                     <div>
                         <div class="text-xs font-bold uppercase tracking-widest text-blue-500 mb-1">
-                            MÜŞTERİ / FİRMA ADI
+                            HİZMET SAĞLAYICI FİRMA
                         </div>
                         <h4 class="text-lg font-black text-slate-800">
-                            {{ $customer->company_name }}
+                            {{ $customer->company->name ?? 'Ana Firma' }}
                         </h4>
                     </div>
                 </div>

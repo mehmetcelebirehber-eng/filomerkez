@@ -160,8 +160,8 @@ class CustomerPortalController extends Controller
 
         $customer = Customer::with('company')->findOrFail($user->customer_id);
 
-        $documents = \App\Models\Document::where('documentable_type', \App\Models\Company::class)
-            ->where('documentable_id', $customer->company_id)
+        $documents = \App\Models\Document::where('documentable_type', Customer::class)
+            ->where('documentable_id', $customer->id)
             ->orderBy('id', 'desc')
             ->get();
 

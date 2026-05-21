@@ -220,17 +220,28 @@
         renderVehicles(vehiclesList, true);
     }
 
-    function createIcon(color, course) {
-        return L.divIcon({
-            className: 'custom-vehicle-marker',
-            html: `<div style="transform: rotate(${course}deg); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M12 2L2 22l10-4 10 4L12 2z"/>
-                      </svg>
-                   </div>`,
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
-        });
+    function createIcon(isMoving, course) {
+        if (isMoving) {
+            // Arvento style moving icon (Blue arrow/circle pointing in direction)
+            return L.divIcon({
+                className: 'custom-vehicle-marker',
+                html: `<div style="transform: rotate(${course}deg); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));">
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="#0ea5e9" stroke="white" stroke-width="2" stroke-linejoin="round">
+                              <path d="M12 2L4 22l8-5 8 5z"/>
+                          </svg>
+                       </div>`,
+                iconSize: [28, 28],
+                iconAnchor: [14, 14]
+            });
+        } else {
+            // Arvento style stopped icon (Red dot with white border)
+            return L.divIcon({
+                className: 'custom-vehicle-marker',
+                html: `<div style="width: 16px; height: 16px; background-color: #ef4444; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.4);"></div>`,
+                iconSize: [16, 16],
+                iconAnchor: [8, 8]
+            });
+        }
     }
 
     function renderVehicles(vehicles, fitBounds = false) {
@@ -242,7 +253,7 @@
                 const lng = parseFloat(vehicle.Longitude);
                 const course = parseFloat(vehicle.Course || 0);
                 const isMoving = vehicle.Speed > 0;
-                const color = isMoving ? '#10b981' : '#ef4444'; // Green for moving, Red for stopped
+                const color = isMoving ? '#10b981' : '#ef4444'; 
                 
                 const popupContent = `
                     <div style="padding: 5px; font-family: sans-serif; min-width: 150px;">
@@ -256,16 +267,30 @@
                 if (markers[vehicle.Node]) {
                     // Update existing marker
                     markers[vehicle.Node].setLatLng([lat, lng]);
-                    markers[vehicle.Node].setIcon(createIcon(color, course));
+                    markers[vehicle.Node].setIcon(createIcon(isMoving, course));
                     markers[vehicle.Node].setPopupContent(popupContent);
+                    // Tooltip text doesn't change, but we ensure it stays
                 } else {
                     // Create new marker
                     const marker = L.marker([lat, lng], {
-                        icon: createIcon(color, course),
+                        icon: createIcon(isMoving, course),
                         title: vehicle.LicensePlate
                     }).addTo(map);
 
                     marker.bindPopup(popupContent);
+                    
+                    // Add permanent label under the marker
+                    marker.bindTooltip(`
+                        <div style="font-weight: 800; color: #0f172a; text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;">
+                            ${vehicle.LicensePlate}
+                        </div>
+                    `, {
+                        permanent: true,
+                        direction: 'bottom',
+                        className: 'bg-transparent border-0 shadow-none',
+                        offset: [0, isMoving ? 10 : 5]
+                    });
+
                     markers[vehicle.Node] = marker;
                 }
                 

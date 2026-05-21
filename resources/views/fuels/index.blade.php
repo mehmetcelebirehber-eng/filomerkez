@@ -63,7 +63,13 @@
     }
 
     $displayRows = $calculatedRows
-        ->sortByDesc('id')
+        ->sortByDesc(function ($row) {
+            return sprintf(
+                '%s-%010d',
+                optional($row->date)->format('Ymd') ?? '00000000',
+                (int) $row->id
+            );
+        })
         ->values();
 
     $totalLiters = (float) $displayRows->sum(fn ($row) => (float) ($row->liters ?? 0));

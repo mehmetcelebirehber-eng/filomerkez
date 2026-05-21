@@ -192,48 +192,74 @@
     </div>
 </div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&callback=initMap" async defer></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <script>
     let map;
     let markers = [];
     const vehicles = @json($vehicles);
 
+    document.addEventListener("DOMContentLoaded", function() {
+        initMap();
+    });
+
     function initMap() {
-        const defaultCenter = { lat: 39.9334, lng: 32.8597 };
-        map = new google.maps.Map(document.getElementById("map"), {
-            zoom: 6,
-            center: defaultCenter,
-            styles: [
-                { "featureType": "all", "elementType": "labels.text.fill", "stylers": [{ "color": "#7c93a3" }, { "lightness": "-10" }] },
-                { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#c9c9c9" }] }
-            ],
-            mapTypeControl: false, streetViewControl: false, fullscreenControl: true
-        });
+        const defaultCenter = [39.9334, 32.8597]; // Ankara
+        
+        map = L.map('map').setView(defaultCenter, 6);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
 
         if (Array.isArray(vehicles) && vehicles.length > 0) {
-            const bounds = new google.maps.LatLngBounds();
+            const bounds = [];
+            
+            // Özel ikon oluştur (Yönü gösterecek şekilde bir SVG veya DivIcon)
             vehicles.forEach(vehicle => {
                 if (vehicle.Latitude && vehicle.Longitude) {
-                    const position = { lat: parseFloat(vehicle.Latitude), lng: parseFloat(vehicle.Longitude) };
-                    const marker = new google.maps.Marker({
-                        position: position, map: map, title: vehicle.LicensePlate,
-                        icon: {
-                            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                            scale: 5, fillColor: (vehicle.Speed > 0) ? "#10b981" : "#f59e0b",
-                            fillOpacity: 1, strokeWeight: 2, strokeColor: "#ffffff",
-                            rotation: parseFloat(vehicle.Course || 0)
-                        }
+                    const lat = parseFloat(vehicle.Latitude);
+                    const lng = parseFloat(vehicle.Longitude);
+                    const course = parseFloat(vehicle.Course || 0);
+                    const isMoving = vehicle.Speed > 0;
+                    const color = isMoving ? '#10b981' : '#f59e0b';
+                    
+                    const customIcon = L.divIcon({
+                        className: 'custom-vehicle-marker',
+                        html: `<div style="transform: rotate(${course}deg); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                      <path d="M12 2L2 22l10-4 10 4L12 2z"/>
+                                  </svg>
+                               </div>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
                     });
-                    const infoWindow = new google.maps.InfoWindow({
-                        content: `<div style="padding: 10px;"><b>${vehicle.LicensePlate}</b><br><small>${vehicle.Speed} km/h</small></div>`
-                    });
-                    marker.addListener("click", () => infoWindow.open(map, marker));
+
+                    const marker = L.marker([lat, lng], {
+                        icon: customIcon,
+                        title: vehicle.LicensePlate
+                    }).addTo(map);
+
+                    marker.bindPopup(`
+                        <div style="padding: 5px; font-family: sans-serif;">
+                            <div style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">${vehicle.LicensePlate}</div>
+                            <div style="color: #64748b; font-size: 12px; margin-bottom: 2px;">Hız: <b>${vehicle.Speed} km/h</b></div>
+                            <div style="color: #64748b; font-size: 12px; margin-bottom: 2px;">Tarih: ${vehicle.Datetime || '-'}</div>
+                            <div style="color: #64748b; font-size: 10px; margin-top: 4px; border-top: 1px solid #e2e8f0; padding-top: 4px;">${vehicle.Address || ''}</div>
+                        </div>
+                    `);
+
                     markers.push(marker);
-                    bounds.extend(position);
+                    bounds.push([lat, lng]);
                 }
             });
-            if (markers.length > 0) map.fitBounds(bounds);
+            
+            if (bounds.length > 0) {
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
         }
     }
 

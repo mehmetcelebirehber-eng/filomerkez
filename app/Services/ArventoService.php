@@ -210,14 +210,17 @@ class ArventoService
 
     public function getMappedLicensePlates()
     {
-        return cache()->remember('arvento_plates_' . $this->setting->company_id, 300, function() {
+        return cache()->remember('arvento_plates_v3_' . $this->setting->company_id, 300, function() {
             $xmlString = $this->getLicensePlateNodeMappings();
             if (!$xmlString) return [];
             
             $mapping = [];
             try {
-                // Wrap in root to ensure valid XML
-                $xmlString = str_replace('xmlns="http://www.arvento.com/"', '', $xmlString); // Kolay parse için namespace'i temizle
+                // Kolay parse için namespace prefixlerini temizle
+                $xmlString = preg_replace('/(<\/?)(diffgr:|msdata:|xs:)/i', '$1', $xmlString);
+                $xmlString = preg_replace('/\s+(diffgr:|msdata:|xs:)[a-zA-Z0-9]+="[^"]*"/i', '', $xmlString);
+                $xmlString = str_replace('xmlns="http://www.arvento.com/"', '', $xmlString);
+                
                 $xml = simplexml_load_string('<root>' . $xmlString . '</root>');
                 if ($xml) {
                     $rows = $xml->xpath('//tblPlaka');

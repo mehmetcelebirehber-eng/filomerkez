@@ -335,18 +335,18 @@
         // Update list on initial load
         updateSidebarList(vehiclesList);
 
-        // Fetch new data every 10 seconds
+        // Fetch new data every 2 seconds
         pollingInterval = setInterval(() => {
             fetch('{{ route("vehicle-tracking.live") }}')
                 .then(response => response.json())
                 .then(data => {
                     if (data.vehicles && Array.isArray(data.vehicles)) {
-                        renderVehicles(data.vehicles, false); // false = dont zoom out every 10s
+                        renderVehicles(data.vehicles, false); // false = dont zoom out every 2s
                         updateSidebarList(data.vehicles);
                     }
                 })
                 .catch(err => console.error("Canlı takip hatası:", err));
-        }, 10000);
+        }, 2000);
     }
 
     function selectProvider(provider) {

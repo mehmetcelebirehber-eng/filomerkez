@@ -72,7 +72,8 @@
             this.calculatedDebt.show = true;
             
             try {
-                const response = await fetch(`/fuel-stations/calculate-debt?fuel_station_id=${this.paymentForm.fuel_station_id}&start_date=${this.paymentForm.start_date}&end_date=${this.paymentForm.end_date}`);
+                const baseUrl = '{{ route('fuel-stations.calculate-debt') }}';
+                const response = await fetch(`${baseUrl}?fuel_station_id=${this.paymentForm.fuel_station_id}&start_date=${this.paymentForm.start_date}&end_date=${this.paymentForm.end_date}`);
                 if (!response.ok) throw new Error('API Error');
                 
                 const data = await response.json();
@@ -121,7 +122,7 @@
         },
 
         async editPayment(paymentId) {
-            const response = await fetch(`/fuel-stations/payments/${paymentId}`);
+            const response = await fetch(`{{ url('/fuel-stations/payments') }}/${paymentId}`);
             const data = await response.json();
 
             this.paymentMode = 'edit';

@@ -11,7 +11,10 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Events\AfterSheet;
 
-class FuelsExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithEvents
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+
+class FuelsExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithEvents, WithColumnFormatting
 {
     protected array $filters;
 
@@ -166,13 +169,25 @@ class FuelsExport implements FromCollection, WithHeadings, WithMapping, ShouldAu
             trim(($fuel->vehicle?->brand ?: '-') . ' ' . ($fuel->vehicle?->model ?: '')),
             $fuel->station?->name ?? $fuel->station_name ?? '-',
             $fuel->fuel_type ?: 'Dizel',
-            !is_null($fuel->km) ? number_format((float) $fuel->km, 0, ',', '.') : '-',
-            !is_null($fuel->km_difference) ? number_format((float) $fuel->km_difference, 0, ',', '.') . ' KM' : '-',
-            number_format((float) ($fuel->liters ?? 0), 2, ',', '.'),
-            number_format((float) ($fuel->price_per_liter ?? 0), 2, ',', '.') . ' ₺',
-            number_format((float) ($fuel->total_cost ?? 0), 2, ',', '.') . ' ₺',
-            !is_null($fuel->km_per_liter) ? number_format((float) $fuel->km_per_liter, 2, ',', '.') : '-',
+            $fuel->km !== null ? (int) $fuel->km : null,
+            $fuel->km_difference !== null ? (int) $fuel->km_difference : null,
+            (float) ($fuel->liters ?? 0),
+            (float) ($fuel->price_per_liter ?? 0),
+            (float) ($fuel->total_cost ?? 0),
+            $fuel->km_per_liter !== null ? (float) $fuel->km_per_liter : null,
             $fuel->notes ?: '-',
+        ];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'F' => NumberFormat::FORMAT_NUMBER,
+            'G' => NumberFormat::FORMAT_NUMBER,
+            'H' => '#,##0.00',
+            'I' => '#,##0.00" ₺"',
+            'J' => '#,##0.00" ₺"',
+            'K' => '#,##0.00',
         ];
     }
 

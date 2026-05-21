@@ -50,6 +50,12 @@ class ArventoService
             if ($response->successful()) {
                 $body = $response->body();
 
+                // Check if Arvento returned a JSONP callback BEFORE the XML envelope
+                // Format: ([{...}]);<?xml ...
+                if (preg_match('/^\(\[.*?\]\);/s', $body, $jsonpMatches)) {
+                    return $jsonpMatches[0]; // Return the raw JSONP string so getVehicleStatus can parse it
+                }
+
                 $resultNode = $safeMethod . "Result";
                 if (preg_match('/<' . $resultNode . '[^>]*>(.*?)<\/' . $resultNode . '>/s', $body, $matches)) {
                     return html_entity_decode($matches[1]);
@@ -80,22 +86,47 @@ class ArventoService
         if (empty($result)) return [];
 
         try {
-            $data = json_decode($result, true);
-            if (!isset($data['GetVehicleStatusJSON'])) return [];
-
-            $vehicles = [];
-            foreach ($data['GetVehicleStatusJSON'] as $v) {
-                $vehicles[] = [
-                    'Node'         => (string)($v['Node'] ?? ''),
-                    'LicensePlate' => (string)($v['LicensePlate'] ?? $v['Node'] ?? 'Plakasız'),
-                    'Latitude'     => (float)($v['Latitude'] ?? 0),
-                    'Longitude'    => (float)($v['Longitude'] ?? 0),
-                    'Speed'        => (int)($v['Speed'] ?? 0),
-                    'Address'      => (string)($v['Address'] ?? ''),
-                    'Course'       => (int)($v['Course'] ?? 0),
-                ];
+            // Arvento's JSON endpoint might return raw JSON wrapped in callback, before XML.
+            // e.g. ([{"Address":"..."}]);<?xml...
+            if (preg_match('/^\(\[(.*?)\]\);/s', $result, $matches)) {
+                $jsonStr = '[' . $matches[1] . ']';
+                $data = json_decode($jsonStr, true);
+                if (is_array($data)) {
+                    $vehicles = [];
+                    foreach ($data as $v) {
+                        $vehicles[] = [
+                            'Node'         => (string)($v['Node'] ?? ''),
+                            'LicensePlate' => (string)($v['LicensePlate'] ?? $v['Node'] ?? 'Plakasız'),
+                            'Latitude'     => (float)($v['LatitudeY'] ?? $v['Latitude'] ?? 0),
+                            'Longitude'    => (float)($v['LongitudeX'] ?? $v['Longitude'] ?? 0),
+                            'Speed'        => (int)($v['Speed'] ?? 0),
+                            'Address'      => (string)($v['Address'] ?? ''),
+                            'Course'       => (int)($v['Course'] ?? 0),
+                        ];
+                    }
+                    return $vehicles;
+                }
             }
-            return $vehicles;
+
+            // Fallback for standard JSON result if it's properly embedded
+            $data = json_decode($result, true);
+            if (isset($data['GetVehicleStatusJSON'])) {
+                $vehicles = [];
+                foreach ($data['GetVehicleStatusJSON'] as $v) {
+                    $vehicles[] = [
+                        'Node'         => (string)($v['Node'] ?? ''),
+                        'LicensePlate' => (string)($v['LicensePlate'] ?? $v['Node'] ?? 'Plakasız'),
+                        'Latitude'     => (float)($v['LatitudeY'] ?? $v['Latitude'] ?? 0),
+                        'Longitude'    => (float)($v['LongitudeX'] ?? $v['Longitude'] ?? 0),
+                        'Speed'        => (int)($v['Speed'] ?? 0),
+                        'Address'      => (string)($v['Address'] ?? ''),
+                        'Course'       => (int)($v['Course'] ?? 0),
+                    ];
+                }
+                return $vehicles;
+            }
+
+            return [];
         } catch (Exception $e) {
             \Log::error("Arvento JSON Parse Error: " . $e->getMessage());
             return [];

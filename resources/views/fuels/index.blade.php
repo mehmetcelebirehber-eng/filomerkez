@@ -58,48 +58,8 @@
         }
     }
 
-    $stationPaymentsMap = $stationSummaries
-        ->mapWithKeys(function ($station) {
-            return [
-                mb_strtolower(trim($station->name ?? '')) => (float) ($station->total_paid ?? 0)
-            ];
-        });
-
-    $paymentStatusMap = [];
-
-    foreach ($calculatedRows
-                ->filter(fn ($row) => filled($row->station?->name ?? $row->station_name))
-                ->groupBy(function ($row) {
-                    return mb_strtolower(trim($row->station?->name ?? $row->station_name ?? ''));
-                }) as $stationKey => $stationRows) {
-
-        $remainingPayment = (float) ($stationPaymentsMap[$stationKey] ?? 0);
-
-        $sortedStationRows = $stationRows
-            ->sortBy(function ($row) {
-                return sprintf(
-                    '%s-%010d-%010d',
-                    optional($row->date)->format('Ymd') ?? '00000000',
-                    (int) $row->id,
-                    (int) ($row->km ?? 0)
-                );
-            })
-            ->values();
-
-        foreach ($sortedStationRows as $row) {
-            $rowTotal = (float) ($row->total_cost ?? 0);
-
-            if ($remainingPayment >= $rowTotal && $rowTotal > 0) {
-                $paymentStatusMap[$row->id] = true;
-                $remainingPayment -= $rowTotal;
-            } else {
-                $paymentStatusMap[$row->id] = false;
-            }
-        }
-    }
-
     foreach ($calculatedRows as $row) {
-        $row->is_paid = $paymentStatusMap[$row->id] ?? false;
+        $row->is_paid = $row->payment_status === 'paid';
     }
 
     $displayRows = $calculatedRows

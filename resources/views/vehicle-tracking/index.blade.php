@@ -61,7 +61,7 @@
                     <div class="h-12 w-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-xl text-emerald-600">🟢</div>
                     <div>
                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aktif Araç</p>
-                        <p class="text-2xl font-black text-slate-900">{{ is_array($vehicles) ? count($vehicles) : 0 }}</p>
+                        <p class="text-2xl font-black text-slate-900" id="activeVehicleCount">{{ is_array($vehicles) ? count($vehicles) : 0 }}</p>
                     </div>
                 </div>
             </div>
@@ -80,23 +80,23 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
             <!-- List -->
-            <div class="lg:col-span-4 space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+            <div id="vehiclesListContainer" class="lg:col-span-4 space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                 @if(is_array($vehicles) && count($vehicles) > 0)
                     @foreach($vehicles as $vehicle)
-                        <div class="group bg-white/70 backdrop-blur-md p-5 rounded-[28px] border border-white shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer">
+                        <div class="group bg-white/70 backdrop-blur-md p-4 rounded-[24px] border border-white shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="focusOnVehicle('{{ $vehicle['Node'] ?? '' }}')">
                             <div class="flex items-center justify-between gap-3">
-                                <div class="flex items-center gap-4 overflow-hidden">
-                                    <div class="h-12 w-12 shrink-0 rounded-2xl bg-slate-100 flex items-center justify-center text-xl group-hover:bg-indigo-500 group-hover:text-white transition-colors">🚚</div>
+                                <div class="flex items-center gap-3 overflow-hidden">
+                                    <div class="h-10 w-10 shrink-0 rounded-[14px] bg-slate-100 flex items-center justify-center text-lg group-hover:bg-indigo-500 group-hover:text-white transition-colors">🚚</div>
                                     <div class="overflow-hidden">
-                                        <h4 class="text-lg font-black text-slate-900 truncate">{{ $vehicle['LicensePlate'] ?? 'Plakasız' }}</h4>
-                                        <p class="text-[10px] font-bold text-slate-400 truncate">{{ $vehicle['Address'] ?? 'Konum alınıyor...' }}</p>
+                                        <h4 class="text-base font-black text-slate-900 truncate">{{ $vehicle['LicensePlate'] ?? 'Plakasız' }}</h4>
+                                        <p class="text-[9px] font-bold text-slate-400 truncate" title="{{ $vehicle['Address'] ?? '' }}">{{ isset($vehicle['Address']) ? \Illuminate\Support\Str::limit($vehicle['Address'], 35) : 'Konum alınıyor...' }}</p>
                                     </div>
                                 </div>
                                 <div class="text-right shrink-0">
-                                    <div class="text-lg font-black text-indigo-600">{{ $vehicle['Speed'] ?? 0 }} <span class="text-[10px]">km/h</span></div>
+                                    <div class="text-base font-black text-indigo-600">{{ $vehicle['Speed'] ?? 0 }} <span class="text-[9px]">km/h</span></div>
                                     <div class="flex items-center gap-1 justify-end mt-1">
-                                        <div class="h-1.5 w-1.5 rounded-full {{ ($vehicle['Speed'] ?? 0) > 0 ? 'bg-emerald-500' : 'bg-amber-500' }}"></div>
-                                        <span class="text-[9px] font-black text-slate-400 uppercase">{{ ($vehicle['Speed'] ?? 0) > 0 ? 'Hareketli' : 'Duran' }}</span>
+                                        <div class="h-1.5 w-1.5 rounded-full {{ ($vehicle['Speed'] ?? 0) > 0 ? 'bg-emerald-500' : 'bg-rose-500' }}"></div>
+                                        <span class="text-[8px] font-black {{ ($vehicle['Speed'] ?? 0) > 0 ? 'text-emerald-500' : 'text-rose-500' }} uppercase tracking-wider">{{ ($vehicle['Speed'] ?? 0) > 0 ? 'HAREKETLİ' : 'DURAN' }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -197,11 +197,13 @@
 
 <script>
     let map;
-    let markers = [];
-    const vehicles = @json($vehicles);
+    let markers = {};
+    let vehiclesList = @json($vehicles);
+    let pollingInterval;
 
     document.addEventListener("DOMContentLoaded", function() {
         initMap();
+        startLiveTracking();
     });
 
     function initMap() {
@@ -215,52 +217,136 @@
             maxZoom: 19
         }).addTo(map);
 
-        if (Array.isArray(vehicles) && vehicles.length > 0) {
-            const bounds = [];
-            
-            // Özel ikon oluştur (Yönü gösterecek şekilde bir SVG veya DivIcon)
-            vehicles.forEach(vehicle => {
-                if (vehicle.Latitude && vehicle.Longitude) {
-                    const lat = parseFloat(vehicle.Latitude);
-                    const lng = parseFloat(vehicle.Longitude);
-                    const course = parseFloat(vehicle.Course || 0);
-                    const isMoving = vehicle.Speed > 0;
-                    const color = isMoving ? '#10b981' : '#f59e0b';
-                    
-                    const customIcon = L.divIcon({
-                        className: 'custom-vehicle-marker',
-                        html: `<div style="transform: rotate(${course}deg); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
-                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                      <path d="M12 2L2 22l10-4 10 4L12 2z"/>
-                                  </svg>
-                               </div>`,
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
-                    });
+        renderVehicles(vehiclesList, true);
+    }
 
+    function createIcon(color, course) {
+        return L.divIcon({
+            className: 'custom-vehicle-marker',
+            html: `<div style="transform: rotate(${course}deg); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M12 2L2 22l10-4 10 4L12 2z"/>
+                      </svg>
+                   </div>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+    }
+
+    function renderVehicles(vehicles, fitBounds = false) {
+        const bounds = [];
+        
+        vehicles.forEach(vehicle => {
+            if (vehicle.Latitude && vehicle.Longitude) {
+                const lat = parseFloat(vehicle.Latitude);
+                const lng = parseFloat(vehicle.Longitude);
+                const course = parseFloat(vehicle.Course || 0);
+                const isMoving = vehicle.Speed > 0;
+                const color = isMoving ? '#10b981' : '#ef4444'; // Green for moving, Red for stopped
+                
+                const popupContent = `
+                    <div style="padding: 5px; font-family: sans-serif; min-width: 150px;">
+                        <div style="font-weight: 900; font-size: 16px; margin-bottom: 4px; color: #0f172a;">${vehicle.LicensePlate}</div>
+                        <div style="color: ${color}; font-size: 14px; font-weight: 800; margin-bottom: 2px;">${vehicle.Speed} km/h <span style="font-size: 10px; color: #64748b;">${isMoving ? '(Hareketli)' : '(Duran)'}</span></div>
+                        <div style="color: #64748b; font-size: 11px; margin-bottom: 6px;">Tarih: ${vehicle.Datetime || '-'}</div>
+                        <div style="color: #475569; font-size: 11px; margin-top: 6px; border-top: 1px dashed #cbd5e1; padding-top: 6px; line-height: 1.4;">${vehicle.Address || 'Konum alınamıyor'}</div>
+                    </div>
+                `;
+
+                if (markers[vehicle.Node]) {
+                    // Update existing marker
+                    markers[vehicle.Node].setLatLng([lat, lng]);
+                    markers[vehicle.Node].setIcon(createIcon(color, course));
+                    markers[vehicle.Node].setPopupContent(popupContent);
+                } else {
+                    // Create new marker
                     const marker = L.marker([lat, lng], {
-                        icon: customIcon,
+                        icon: createIcon(color, course),
                         title: vehicle.LicensePlate
                     }).addTo(map);
 
-                    marker.bindPopup(`
-                        <div style="padding: 5px; font-family: sans-serif;">
-                            <div style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">${vehicle.LicensePlate}</div>
-                            <div style="color: #64748b; font-size: 12px; margin-bottom: 2px;">Hız: <b>${vehicle.Speed} km/h</b></div>
-                            <div style="color: #64748b; font-size: 12px; margin-bottom: 2px;">Tarih: ${vehicle.Datetime || '-'}</div>
-                            <div style="color: #64748b; font-size: 10px; margin-top: 4px; border-top: 1px solid #e2e8f0; padding-top: 4px;">${vehicle.Address || ''}</div>
-                        </div>
-                    `);
-
-                    markers.push(marker);
-                    bounds.push([lat, lng]);
+                    marker.bindPopup(popupContent);
+                    markers[vehicle.Node] = marker;
                 }
-            });
-            
-            if (bounds.length > 0) {
-                map.fitBounds(bounds, { padding: [50, 50] });
+                
+                bounds.push([lat, lng]);
             }
+        });
+        
+        if (fitBounds && bounds.length > 0) {
+            map.fitBounds(bounds, { padding: [50, 50] });
         }
+    }
+
+    function updateSidebarList(vehicles) {
+        const listContainer = document.getElementById('vehiclesListContainer');
+        if (!listContainer) return;
+
+        if (vehicles.length === 0) {
+            listContainer.innerHTML = `
+                <div class="p-10 text-center bg-white/40 rounded-[30px] border border-white border-dashed">
+                    <p class="text-slate-400 font-bold">Araç verisi bulunamadı.</p>
+                </div>`;
+            return;
+        }
+
+        let html = '';
+        vehicles.forEach(vehicle => {
+            const isMoving = vehicle.Speed > 0;
+            const statusColor = isMoving ? 'text-emerald-500' : 'text-rose-500';
+            const dotColor = isMoving ? 'bg-emerald-500' : 'bg-rose-500';
+            const statusText = isMoving ? 'HAREKETLİ' : 'DURAN';
+
+            html += `
+                <div class="group bg-white/70 backdrop-blur-md p-4 rounded-[24px] border border-white shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="focusOnVehicle('${vehicle.Node}')">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <div class="h-10 w-10 shrink-0 rounded-[14px] bg-slate-100 flex items-center justify-center text-lg group-hover:bg-indigo-500 group-hover:text-white transition-colors">🚚</div>
+                            <div class="overflow-hidden">
+                                <h4 class="text-base font-black text-slate-900 truncate">${vehicle.LicensePlate}</h4>
+                                <p class="text-[9px] font-bold text-slate-400 truncate" title="${vehicle.Address || ''}">${vehicle.Address ? vehicle.Address.substring(0, 35) + '...' : 'Konum alınıyor...'}</p>
+                            </div>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <div class="text-base font-black text-indigo-600">${vehicle.Speed || 0} <span class="text-[9px]">km/h</span></div>
+                            <div class="flex items-center gap-1 justify-end mt-1">
+                                <div class="h-1.5 w-1.5 rounded-full ${dotColor}"></div>
+                                <span class="text-[8px] font-black ${statusColor} uppercase tracking-wider">${statusText}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        listContainer.innerHTML = html;
+        document.getElementById('activeVehicleCount').innerText = vehicles.length;
+    }
+
+    function focusOnVehicle(nodeId) {
+        const marker = markers[nodeId];
+        if (marker) {
+            map.flyTo(marker.getLatLng(), 15, { duration: 1 });
+            setTimeout(() => { marker.openPopup(); }, 1000);
+        }
+    }
+
+    function startLiveTracking() {
+        // Update list on initial load
+        updateSidebarList(vehiclesList);
+
+        // Fetch new data every 10 seconds
+        pollingInterval = setInterval(() => {
+            fetch('{{ route("vehicle-tracking.live") }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.vehicles && Array.isArray(data.vehicles)) {
+                        renderVehicles(data.vehicles, false); // false = dont zoom out every 10s
+                        updateSidebarList(data.vehicles);
+                    }
+                })
+                .catch(err => console.error("Canlı takip hatası:", err));
+        }, 10000);
     }
 
     function selectProvider(provider) {

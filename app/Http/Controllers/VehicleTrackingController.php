@@ -24,6 +24,22 @@ class VehicleTrackingController extends Controller
         return view('vehicle-tracking.index', compact('setting', 'vehicles'));
     }
 
+    public function live()
+    {
+        abort_unless(auth()->user()->hasPermission('vehicles.view'), 403);
+
+        $companyId = auth()->user()->company_id;
+        $setting = VehicleTrackingSetting::where('company_id', $companyId)->where('is_active', true)->first();
+        
+        $vehicles = [];
+        if ($setting && $setting->provider === 'arvento') {
+            $arvento = new \App\Services\ArventoService($setting);
+            $vehicles = $arvento->getVehicleStatus();
+        }
+
+        return response()->json(['vehicles' => $vehicles]);
+    }
+
     public function store(Request $request)
     {
         abort_unless(auth()->user()->hasPermission('vehicles.edit'), 403);

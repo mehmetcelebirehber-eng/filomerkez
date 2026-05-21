@@ -266,13 +266,17 @@ Route::get('/dashboard', function () {
 
 })->middleware(['auth', 'verified', 'permission:dashboard.view'])->name('dashboard');
 
-    Route::get('/vehicle-tracking', [VehicleTrackingController::class, 'index'])
-        ->middleware(['auth', 'permission:vehicles.view'])
-        ->name('vehicle-tracking.index');
+Route::get('/vehicle-tracking', [VehicleTrackingController::class, 'index'])
+    ->middleware(['auth', 'permission:vehicles.view'])
+    ->name('vehicle-tracking.index');
 
-    Route::post('/vehicle-tracking', [VehicleTrackingController::class, 'store'])
-        ->middleware(['auth', 'permission:vehicles.view'])
-        ->name('vehicle-tracking.store');
+Route::get('/vehicle-tracking/live', [VehicleTrackingController::class, 'live'])
+    ->middleware(['auth', 'permission:vehicles.view'])
+    ->name('vehicle-tracking.live');
+
+Route::post('/vehicle-tracking', [VehicleTrackingController::class, 'store'])
+    ->middleware(['auth', 'permission:vehicles.view'])
+    ->name('vehicle-tracking.store');
 
 Route::middleware('auth')->group(function () {
     /*

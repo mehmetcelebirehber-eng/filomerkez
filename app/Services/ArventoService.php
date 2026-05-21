@@ -85,6 +85,8 @@ class ArventoService
 
         if (empty($result)) return [];
 
+        $mappedPlates = $this->getMappedLicensePlates();
+
         try {
             // Arvento's JSON endpoint might return raw JSON wrapped in callback, before XML.
             // e.g. ([{"Address":"..."}]);<?xml...
@@ -94,14 +96,16 @@ class ArventoService
                 if (is_array($data)) {
                     $vehicles = [];
                     foreach ($data as $v) {
+                        $node = (string)($v['Node'] ?? '');
                         $vehicles[] = [
-                            'Node'         => (string)($v['Node'] ?? ''),
-                            'LicensePlate' => (string)($v['LicensePlate'] ?? $v['Node'] ?? 'Plakasız'),
+                            'Node'         => $node,
+                            'LicensePlate' => $mappedPlates[$node] ?? (string)($v['LicensePlate'] ?? $node ?? 'Plakasız'),
                             'Latitude'     => (float)($v['LatitudeY'] ?? $v['Latitude'] ?? 0),
                             'Longitude'    => (float)($v['LongitudeX'] ?? $v['Longitude'] ?? 0),
                             'Speed'        => (int)($v['Speed'] ?? 0),
                             'Address'      => (string)($v['Address'] ?? ''),
                             'Course'       => (int)($v['Course'] ?? 0),
+                            'Datetime'     => isset($v['LocalDateTime']) ? date('d.m.Y H:i', strtotime($v['LocalDateTime'])) : '',
                         ];
                     }
                     return $vehicles;
@@ -113,14 +117,16 @@ class ArventoService
             if (isset($data['GetVehicleStatusJSON'])) {
                 $vehicles = [];
                 foreach ($data['GetVehicleStatusJSON'] as $v) {
+                    $node = (string)($v['Node'] ?? '');
                     $vehicles[] = [
-                        'Node'         => (string)($v['Node'] ?? ''),
-                        'LicensePlate' => (string)($v['LicensePlate'] ?? $v['Node'] ?? 'Plakasız'),
+                        'Node'         => $node,
+                        'LicensePlate' => $mappedPlates[$node] ?? (string)($v['LicensePlate'] ?? $node ?? 'Plakasız'),
                         'Latitude'     => (float)($v['LatitudeY'] ?? $v['Latitude'] ?? 0),
                         'Longitude'    => (float)($v['LongitudeX'] ?? $v['Longitude'] ?? 0),
                         'Speed'        => (int)($v['Speed'] ?? 0),
                         'Address'      => (string)($v['Address'] ?? ''),
                         'Course'       => (int)($v['Course'] ?? 0),
+                        'Datetime'     => isset($v['LocalDateTime']) ? date('d.m.Y H:i', strtotime($v['LocalDateTime'])) : '',
                     ];
                 }
                 return $vehicles;
@@ -200,5 +206,33 @@ class ArventoService
             'PIN1'     => $this->setting->app_id ?? '',
             'PIN2'     => $this->setting->app_key ?? '',
         ]);
+    }
+
+    public function getMappedLicensePlates()
+    {
+        return cache()->remember('arvento_plates_' . $this->setting->company_id, 300, function() {
+            $xmlString = $this->getLicensePlateNodeMappings();
+            if (!$xmlString) return [];
+            
+            $mapping = [];
+            try {
+                // Wrap in root to ensure valid XML
+                $xmlString = str_replace('xmlns="http://www.arvento.com/"', '', $xmlString); // Kolay parse için namespace'i temizle
+                $xml = simplexml_load_string('<root>' . $xmlString . '</root>');
+                if ($xml) {
+                    $rows = $xml->xpath('//tblPlaka');
+                    foreach ($rows as $row) {
+                        $node = (string)$row->Cihaz_x0020_No;
+                        $plaka = (string)$row->Plaka;
+                        if ($node && $plaka) {
+                            $mapping[$node] = trim($plaka);
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                \Log::error("Arvento Plate Mapping Error: " . $e->getMessage());
+            }
+            return $mapping;
+        });
     }
 }

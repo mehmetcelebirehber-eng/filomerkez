@@ -43,6 +43,7 @@
         calculatedDebt: {
             isLoading: false,
             show: false,
+            totalLiters: 0,
             grossTotal: 0,
             discountTotal: 0,
             netTotal: 0,
@@ -75,6 +76,7 @@
                 if (!response.ok) throw new Error('API Error');
                 
                 const data = await response.json();
+                this.calculatedDebt.totalLiters = data.total_liters;
                 this.calculatedDebt.grossTotal = data.gross_total;
                 this.calculatedDebt.discountTotal = data.discount_total;
                 this.calculatedDebt.netTotal = data.net_total;
@@ -617,29 +619,36 @@
 
                                 <!-- Hesaplanan Borç Özeti -->
                                 <div class="md:col-span-2" x-show="calculatedDebt.show" x-transition x-cloak>
-                                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 relative overflow-hidden">
+                                    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm relative overflow-hidden">
                                         <div x-show="calculatedDebt.isLoading" class="absolute inset-0 bg-white/70 backdrop-blur-[2px] flex items-center justify-center z-10">
                                             <div class="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600"></div>
                                         </div>
 
-                                        <h4 class="mb-3 text-sm font-bold text-slate-800">Seçili Tarihler Arası Borç Özeti</h4>
-                                        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                                            <div>
-                                                <div class="text-xs text-slate-500">Brüt Tutar</div>
-                                                <div class="font-semibold text-slate-700" x-text="`${calculatedDebt.grossTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺`"></div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-slate-500">İskonto</div>
-                                                <div class="font-semibold text-slate-700" x-text="`${calculatedDebt.discountTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺`"></div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-emerald-600">Ödenen Toplam</div>
-                                                <div class="font-bold text-emerald-700" x-text="`${calculatedDebt.paidTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺`"></div>
-                                            </div>
-                                            <div>
-                                                <div class="text-xs text-blue-600">Net Ödenecek Kalan</div>
-                                                <div class="font-bold text-blue-700" x-text="`${calculatedDebt.netPayable.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺`"></div>
-                                            </div>
+                                        <div class="bg-slate-50 px-4 py-3 border-b border-slate-100">
+                                            <h4 class="text-sm font-bold text-slate-800">Seçili Tarihler Arası Borç Özeti</h4>
+                                        </div>
+                                        
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                                <thead>
+                                                    <tr class="bg-slate-50/50 text-slate-500">
+                                                        <th class="px-4 py-2 font-medium">Toplam Alınan (Litre)</th>
+                                                        <th class="px-4 py-2 font-medium">İskontosuz Brüt Tutar</th>
+                                                        <th class="px-4 py-2 font-medium">İskonto</th>
+                                                        <th class="px-4 py-2 font-medium text-emerald-600">Ödenen Toplam</th>
+                                                        <th class="px-4 py-2 font-bold text-blue-600">Net Kalan Borç</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-slate-100">
+                                                    <tr>
+                                                        <td class="px-4 py-3 font-semibold text-slate-700" x-text="`${calculatedDebt.totalLiters.toLocaleString('tr-TR', {minimumFractionDigits: 2})} LT`"></td>
+                                                        <td class="px-4 py-3 font-semibold text-slate-700" x-text="`${calculatedDebt.grossTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺`"></td>
+                                                        <td class="px-4 py-3 font-semibold text-slate-700" x-text="`${calculatedDebt.discountTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺`"></td>
+                                                        <td class="px-4 py-3 font-bold text-emerald-700" x-text="`${calculatedDebt.paidTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺`"></td>
+                                                        <td class="px-4 py-3 font-bold text-blue-700 text-base" x-text="`${calculatedDebt.netPayable.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺`"></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>

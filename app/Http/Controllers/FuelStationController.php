@@ -369,6 +369,7 @@ class FuelStationController extends Controller
         $grossTotal = (float) $fuels->sum('gross_total_cost');
         $discountTotal = (float) $fuels->sum('discount_amount');
         $netTotal = (float) $fuels->sum('total_cost');
+        $totalLiters = (float) $fuels->sum('liters');
 
         $paidTotal = (float) $fuels->sum('paid_amount');
         $netPayable = max(0, $netTotal - $paidTotal);
@@ -379,6 +380,7 @@ class FuelStationController extends Controller
             'net_total' => $netTotal,
             'paid_total' => $paidTotal,
             'net_payable' => $netPayable,
+            'total_liters' => $totalLiters,
         ]);
     }
 }

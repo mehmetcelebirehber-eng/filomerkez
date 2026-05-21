@@ -195,6 +195,17 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
+<style>
+    .custom-vehicle-tooltip {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+    .custom-vehicle-tooltip::before {
+        display: none !important;
+    }
+</style>
 <script>
     let map;
     let markers = {};
@@ -211,10 +222,10 @@
         
         map = L.map('map').setView(defaultCenter, 6);
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 19
+        // Arvento benzeri Google Maps (veya Basarsoft) görünümü için Google Streets katmanı
+        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            attribution: '&copy; Google Maps',
+            maxZoom: 20
         }).addTo(map);
 
         renderVehicles(vehiclesList, true);
@@ -287,7 +298,7 @@
                     `, {
                         permanent: true,
                         direction: 'bottom',
-                        className: 'bg-transparent border-0 shadow-none',
+                        className: 'custom-vehicle-tooltip',
                         offset: [0, isMoving ? 10 : 5]
                     });
 

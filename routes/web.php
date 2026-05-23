@@ -278,6 +278,14 @@ Route::post('/vehicle-tracking', [VehicleTrackingController::class, 'store'])
     ->middleware(['auth', 'permission:vehicles.view'])
     ->name('vehicle-tracking.store');
 
+Route::get('/vehicle-tracking/reports', [VehicleTrackingController::class, 'reports'])
+    ->middleware('permission:vehicle-tracking.view')
+    ->name('vehicle-tracking.reports');
+
+Route::get('/vehicle-tracking/reports/daily-work', [VehicleTrackingController::class, 'dailyWorkReport'])
+    ->middleware('permission:vehicle-tracking.view')
+    ->name('vehicle-tracking.reports.daily-work');
+
 Route::middleware('auth')->group(function () {
     /*
     |--------------------------------------------------------------------------

@@ -67,4 +67,51 @@ class VehicleTrackingController extends Controller
 
         return back()->with('success', 'Araç takip sistem ayarları başarıyla kaydedildi.');
     }
+
+    public function reports()
+    {
+        abort_unless(auth()->user()->hasPermission('vehicle-tracking.view'), 403);
+        
+        // Varsayılan olarak günlük çalışma raporu sayfasına yönlendir veya boş göster
+        return redirect()->route('vehicle-tracking.reports.daily-work');
+    }
+
+    public function dailyWorkReport(Request $request)
+    {
+        abort_unless(auth()->user()->hasPermission('vehicle-tracking.view'), 403);
+
+        $companyId = auth()->user()->company_id;
+        $setting = VehicleTrackingSetting::where('company_id', $companyId)->where('is_active', true)->first();
+        
+        $date = $request->input('date', date('Y-m-d'));
+        $reports = [];
+
+        if ($setting && $setting->provider === 'arvento') {
+            $arvento = new \App\Services\ArventoService($setting);
+            $mapping = $arvento->getMappedLicensePlates();
+            
+            // Sadece bu şirkete atanmış cihazları al
+            $nodeList = implode(',', array_keys($mapping));
+
+            if (!empty($nodeList)) {
+                $reports = $arvento->getDailyFirstContactReport($date, $nodeList);
+            }
+            
+            // O gün hiç kontak açmayan araçları da listeye ekle
+            foreach ($mapping as $node => $plate) {
+                if (!isset($reports[$node])) {
+                    $reports[$node] = [
+                        'LicensePlate' => $plate,
+                        'Driver' => '-',
+                        'DateTime' => '-',
+                        'Latitude' => 0,
+                        'Longitude' => 0,
+                        'Address' => 'Kontak Açılmadı / Veri Yok',
+                    ];
+                }
+            }
+        }
+
+        return view('vehicle-tracking.reports', compact('setting', 'reports', 'date'));
+    }
 }

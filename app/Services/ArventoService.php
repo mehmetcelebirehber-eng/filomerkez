@@ -238,4 +238,67 @@ class ArventoService
             return $mapping;
         });
     }
+
+    /**
+     * Araçların günlük ilk kontak açılma (İlk Çalışma) raporunu çeker.
+     * $date formatı: Y-m-d (Örn: 2026-05-21)
+     */
+    public function getDailyFirstContactReport($date, $nodeList = '')
+    {
+        // Arvento özel tarih formatı: YmdHis (Örn: 20260521000000)
+        $dateObj = \Carbon\Carbon::parse($date);
+        $date1 = $dateObj->format('Ymd') . "000000";
+        $date2 = $dateObj->format('Ymd') . "235959";
+
+        $result = $this->call('ContactAlarm', [
+            'Username'  => $this->setting->username,
+            'PIN1'      => $this->setting->app_id ?? '',
+            'PIN2'      => $this->setting->app_key ?? '',
+            'StartDate' => $date1,
+            'EndDate'   => $date2,
+            'Node'      => $nodeList,
+            'Group'     => '',
+            'Compress'  => '0',
+            'MinuteDif' => '0',
+            'Language'  => '1', // 1=English (PKTTYPE C333/C334 is safer though)
+        ]);
+
+        if (!$result) return [];
+
+        try {
+            // Kolay parse için namespace prefixlerini temizle
+            $xmlString = preg_replace('/(<\/?)(diffgr:|msdata:|xs:)/i', '$1', $result);
+            $xmlString = preg_replace('/\s+(diffgr:|msdata:|xs:)[a-zA-Z0-9]+="[^"]*"/i', '', $xmlString);
+            $xmlString = str_replace('xmlns="http://www.arvento.com/"', '', $xmlString);
+
+            $xml = simplexml_load_string('<root>' . $xmlString . '</root>');
+            if (!$xml) return [];
+
+            $rows = $xml->xpath('//Table1');
+            
+            $firstContacts = [];
+            foreach ($rows as $row) {
+                // PKTTYPE C333 = Ignition Switched On
+                if ((string)$row->PKTTYPE === 'C333') {
+                    $node = (string)$row->NODE;
+                    // İlk gördüğümüz "C333" (kronolojik sıralı gelir) o günkü İLK kontak açılışıdır.
+                    if (!isset($firstContacts[$node])) {
+                        $firstContacts[$node] = [
+                            'LicensePlate' => (string)$row->LICENSEPLATE,
+                            'Driver' => (string)$row->DRIVER,
+                            'DateTime' => date('d.m.Y H:i', strtotime((string)$row->LOCALDATETIME)),
+                            'Latitude' => (float)$row->Latitude,
+                            'Longitude' => (float)$row->Longitude,
+                            'Address' => (string)$row->Address,
+                        ];
+                    }
+                }
+            }
+
+            return $firstContacts;
+        } catch (Exception $e) {
+            \Log::error("Arvento ContactAlarm Parse Error: " . $e->getMessage());
+            return [];
+        }
+    }
 }

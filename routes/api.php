@@ -196,6 +196,12 @@ Route::prefix('v1')->middleware(['auth:sanctum', \App\Http\Middleware\CheckCompa
     Route::put('/payrolls/{id}', [\App\Http\Controllers\Api\V1\PayrollApiController::class, 'update']);
     Route::delete('/payrolls/{id}', [\App\Http\Controllers\Api\V1\PayrollApiController::class, 'destroy']);
     
+    // Expenses
+    Route::get('/expenses', [\App\Http\Controllers\Api\V1\ExpenseApiController::class, 'index']);
+    Route::post('/expenses', [\App\Http\Controllers\Api\V1\ExpenseApiController::class, 'store']);
+    Route::put('/expenses/{expense}', [\App\Http\Controllers\Api\V1\ExpenseApiController::class, 'update']);
+    Route::delete('/expenses/{expense}', [\App\Http\Controllers\Api\V1\ExpenseApiController::class, 'destroy']);
+
     // Vehicles (Read-Only)
     Route::get('/vehicles', [\App\Http\Controllers\Api\V1\VehicleApiController::class, 'index']);
     Route::get('/vehicles/{id}', [\App\Http\Controllers\Api\V1\VehicleApiController::class, 'show']);

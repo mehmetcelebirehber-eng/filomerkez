@@ -38,6 +38,7 @@ use App\Http\Controllers\CompanyUserController;
 use App\Http\Controllers\ServiceRouteController;
 use App\Http\Controllers\CompanySettingsController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\TrafficPenaltyController;
 use App\Http\Controllers\CustomerContractController;
 use App\Http\Controllers\CustomerPortalController;
@@ -719,6 +720,9 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('payrolls', PayrollController::class)
         ->middleware('permission:payrolls.view');
+
+    Route::resource('expenses', ExpenseController::class)
+        ->middleware('permission:expenses.view');
 
     Route::resource('documents', DocumentController::class)
         ->except(['show'])

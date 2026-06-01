@@ -56,7 +56,7 @@
     @endif
 
     {{-- KPI Kartları --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-6 mb-6">
         
         {{-- Toplam Araç --}}
         <a href="{{ route('vehicles.index') }}" class="group relative overflow-hidden rounded-[32px] bg-gradient-to-br from-indigo-500 to-blue-600 p-6 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
@@ -69,6 +69,21 @@
                 </div>
                 <div class="mt-6">
                     <div class="text-3xl font-black text-white">{{ $kpi['total'] }}</div>
+                </div>
+            </div>
+        </a>
+
+        {{-- Şoförsüz Araçlar --}}
+        <a href="{{ route('vehicles.index', ['filter' => 'no_driver']) }}" class="group relative overflow-hidden rounded-[32px] bg-gradient-to-br from-purple-500 to-fuchsia-600 p-6 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <div class="absolute -right-2 -bottom-2 opacity-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-700 drop-shadow-2xl z-0">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People%20with%20professions/Man%20Mechanic.png" alt="Personel Yok" class="w-24 h-24 drop-shadow-2xl" />
+            </div>
+            <div class="relative flex flex-col justify-between h-full z-10">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-black text-white uppercase tracking-widest bg-white/20 px-3 py-1.5 rounded-xl">Şoförü Olmayan (Boşta)</span>
+                </div>
+                <div class="mt-6">
+                    <div class="text-3xl font-black text-white">{{ $kpi['no_driver'] }}</div>
                 </div>
             </div>
         </a>

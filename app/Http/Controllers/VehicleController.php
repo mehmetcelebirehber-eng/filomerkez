@@ -36,7 +36,7 @@ class VehicleController extends Controller
             'search' => ['nullable', 'string', 'max:100'],
             'type'   => ['nullable', 'string', 'max:50'],
             'status' => ['nullable', 'in:active,passive,all'],
-            'filter' => ['nullable', 'in:upcoming_inspection,upcoming_insurance'],
+            'filter' => ['nullable', 'in:upcoming_inspection,upcoming_insurance,no_driver'],
         ]);
 
         $search = trim((string) ($filters['search'] ?? ''));
@@ -69,6 +69,7 @@ class VehicleController extends Controller
             ->when($status === 'passive', fn ($q) => $q->where('is_active', false))
             ->when($specialFilter === 'upcoming_inspection', fn ($q) => $q->whereNotNull('inspection_date')->where('inspection_date', '<=', now()->addDays(30)))
             ->when($specialFilter === 'upcoming_insurance', fn ($q) => $q->whereNotNull('insurance_end_date')->where('insurance_end_date', '<=', now()->addDays(30)))
+            ->when($specialFilter === 'no_driver', fn ($q) => $q->whereDoesntHave('drivers', fn($d) => $d->where('is_active', true)))
             ->latest()
             ->paginate(100)
             ->withQueryString();
@@ -78,6 +79,7 @@ class VehicleController extends Controller
             'total' => Vehicle::count(),
             'upcoming_inspection' => Vehicle::whereNotNull('inspection_date')->where('inspection_date', '<=', now()->addDays(30))->count(),
             'upcoming_insurance' => Vehicle::whereNotNull('insurance_end_date')->where('insurance_end_date', '<=', now()->addDays(30))->count(),
+            'no_driver' => Vehicle::whereDoesntHave('drivers', fn($d) => $d->where('is_active', true))->count(),
             'types' => Vehicle::selectRaw('vehicle_type, count(*) as count')->groupBy('vehicle_type')->pluck('count', 'vehicle_type')->toArray(),
         ];
 

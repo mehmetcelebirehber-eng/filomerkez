@@ -54,9 +54,9 @@
                     @forelse($invoices as $invoice)
                         <tr class="hover:bg-slate-50/80 transition-colors">
                             <td class="px-5 py-4 whitespace-nowrap">
-                                <div class="font-bold text-slate-800">{{ $invoice->company->name }}</div>
+                                <div class="font-bold text-slate-800">{{ $invoice->company?->name ?? 'Silinmiş Firma' }}</div>
                                 <div class="text-xs font-bold text-indigo-500 mt-0.5">
-                                    {{ $invoice->plan ? 'Plan Seçimi: ' . $invoice->plan->name : ($invoice->admin_notes ?? 'Genel Ödeme') }}
+                                    {{ $invoice->plan ? 'Plan Seçimi: ' . $invoice->plan?->name : ($invoice->admin_notes ?? 'Genel Ödeme') }}
                                 </div>
                             </td>
                             <td class="px-5 py-4 whitespace-nowrap font-medium text-slate-500">

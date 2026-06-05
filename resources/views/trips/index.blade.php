@@ -237,11 +237,12 @@
                                                 @if($route->service_type !== 'evening')
                                                 @php
                                                     $isMCustom = false;
+                                                    $mDisplayDriver = $cell['morning_driver_name'] ?? $cell['default_morning_driver_name'] ?? 'Tanımsız';
                                                     if (!empty($cell['morning_manual_driver_name'])) {
                                                         $mDisplayDriver = $cell['morning_manual_driver_name'];
-                                                        $isMCustom = true;
-                                                    } else {
-                                                        $mDisplayDriver = $cell['morning_driver_name'] ?? $cell['default_morning_driver_name'] ?? 'Tanımsız';
+                                                        if (!empty($cell['default_morning_driver_id']) && $cell['morning_driver_id'] != $cell['default_morning_driver_id']) {
+                                                            $isMCustom = true;
+                                                        }
                                                     }
                                                 @endphp
                                                 <div class="text-[9px] font-bold px-1.5 py-1 rounded flex flex-col gap-0.5 {{ $isMorningDiff ? 'bg-emerald-200 text-emerald-900 border-2 border-dashed border-emerald-500' : 'bg-emerald-100 text-emerald-800 border border-emerald-200' }}" title="{{ $isMorningDiff ? 'Farklı Araç Gitti!' : 'Sabah Aracı' }}">
@@ -257,11 +258,12 @@
                                                 @if($route->service_type !== 'morning')
                                                 @php
                                                     $isECustom = false;
+                                                    $eDisplayDriver = $cell['evening_driver_name'] ?? $cell['default_evening_driver_name'] ?? 'Tanımsız';
                                                     if (!empty($cell['evening_manual_driver_name'])) {
                                                         $eDisplayDriver = $cell['evening_manual_driver_name'];
-                                                        $isECustom = true;
-                                                    } else {
-                                                        $eDisplayDriver = $cell['evening_driver_name'] ?? $cell['default_evening_driver_name'] ?? 'Tanımsız';
+                                                        if (!empty($cell['default_evening_driver_id']) && $cell['evening_driver_id'] != $cell['default_evening_driver_id']) {
+                                                            $isECustom = true;
+                                                        }
                                                     }
                                                 @endphp
                                                 <div class="text-[9px] font-bold px-1.5 py-1 rounded flex flex-col gap-0.5 {{ $isEveningDiff ? 'bg-rose-200 text-rose-900 border-2 border-dashed border-rose-500' : 'bg-rose-100 text-rose-800 border border-rose-200' }}" title="{{ $isEveningDiff ? 'Farklı Araç Gitti!' : 'Akşam Aracı' }}">

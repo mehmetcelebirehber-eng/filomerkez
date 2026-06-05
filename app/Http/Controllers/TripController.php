@@ -354,6 +354,16 @@ class TripController extends Controller
 
         $fallbackVehicleId = $morningVehicleId ?: $eveningVehicleId ?: $singleVehicleId;
 
+        // BUG FIX: Snapshot the current drivers of the selected vehicles to prevent historical data
+        // from changing when a vehicle's default driver is updated in the future.
+        if (empty($morningDriverId) && $morningVehicleId) {
+            $morningDriverId = $this->resolveVehicleDriverId($morningVehicleId, $tripDate);
+        }
+        if (empty($eveningDriverId) && $eveningVehicleId) {
+            $eveningDriverId = $this->resolveVehicleDriverId($eveningVehicleId, $tripDate);
+        }
+
+
         // EĞER FİYAT 0 VEYA BOŞSA: Kayıtlı özel plakaları sil ve varsayılana dön
         if ($tripPrice === 0 || $tripPrice === '0' || $tripPrice === null || $tripPrice === '') {
             Trip::where('service_route_id', $serviceRoute->id)
@@ -623,5 +633,23 @@ class TripController extends Controller
         }
 
         return $holidays;
+    }
+
+    private function resolveVehicleDriverId($vehicleId, Carbon $date)
+    {
+        if (!$vehicleId) return null;
+        $vehicle = \App\Models\Fleet\Vehicle::with('drivers')->find($vehicleId);
+        if (!$vehicle) return null;
+        
+        $targetDate = $date->startOfDay();
+        $driver = $vehicle->drivers->filter(function($d) use ($targetDate) {
+            $start = $d->start_date ? Carbon::parse($d->start_date)->startOfDay() : null;
+            $leave = $d->leave_date ? Carbon::parse($d->leave_date)->startOfDay() : null;
+            if ($start && $targetDate->lt($start)) return false;
+            if ($leave && $targetDate->gt($leave)) return false;
+            return true;
+        })->first();
+        
+        return $driver ? $driver->id : null;
     }
 }

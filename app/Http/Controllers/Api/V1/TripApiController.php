@@ -479,6 +479,8 @@ class TripApiController extends BaseApiController
             'morning_vehicle_id' => ['nullable', 'exists:vehicles,id'],
             'evening_vehicle_id' => ['nullable', 'exists:vehicles,id'],
             'driver_id' => ['nullable', 'exists:drivers,id'],
+            'morning_driver_id' => ['nullable', 'exists:drivers,id'],
+            'evening_driver_id' => ['nullable', 'exists:drivers,id'],
             'trip_status' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string'],
         ]);
@@ -491,6 +493,8 @@ class TripApiController extends BaseApiController
         $tripDate = Carbon::parse($validated['trip_date']);
         $tripPrice = array_key_exists('trip_price', $validated) ? $validated['trip_price'] : null;
         $driverId = $validated['driver_id'] ?? null;
+        $morningDriverId = $validated['morning_driver_id'] ?? null;
+        $eveningDriverId = $validated['evening_driver_id'] ?? null;
         $notes = $validated['notes'] ?? null;
         $tripStatus = $validated['trip_status'] ?? 'Yapıldı';
 
@@ -530,7 +534,7 @@ class TripApiController extends BaseApiController
             ]);
         }
 
-        // EĞER ŞOFÖR BOŞ GELİRSE
+        // EĞER ŞOFÖR BOŞ GELİRSE (Eski yapı için)
         if (!$driverId && $fallbackVehicleId) {
             $autoDriver = \App\Models\Fleet\Driver::where('vehicle_id', $fallbackVehicleId)
                 ->where('is_active', true)
@@ -539,6 +543,15 @@ class TripApiController extends BaseApiController
             if ($autoDriver) {
                 $driverId = $autoDriver->id;
             }
+        }
+
+        // BUG FIX: Snapshot the current drivers of the selected vehicles to prevent historical data
+        // from changing when a vehicle's default driver is updated in the future.
+        if (empty($morningDriverId) && $morningVehicleId) {
+            $morningDriverId = $this->resolveVehicleDriverId($morningVehicleId, $tripDate);
+        }
+        if (empty($eveningDriverId) && $eveningVehicleId) {
+            $eveningDriverId = $this->resolveVehicleDriverId($eveningVehicleId, $tripDate);
         }
 
         $trip = Trip::query()->updateOrCreate(
@@ -552,6 +565,8 @@ class TripApiController extends BaseApiController
                 'morning_vehicle_id' => $morningVehicleId,
                 'evening_vehicle_id' => $eveningVehicleId,
                 'driver_id' => $driverId,
+                'morning_driver_id' => $morningDriverId,
+                'evening_driver_id' => $eveningDriverId,
                 'trip_status' => $tripStatus,
                 'trip_price' => $tripPrice,
                 'notes' => $notes,
@@ -596,5 +611,23 @@ class TripApiController extends BaseApiController
         }
 
         return $holidays;
+    }
+
+    private function resolveVehicleDriverId($vehicleId, Carbon $date)
+    {
+        if (!$vehicleId) return null;
+        $vehicle = \App\Models\Fleet\Vehicle::with('drivers')->find($vehicleId);
+        if (!$vehicle) return null;
+        
+        $targetDate = $date->startOfDay();
+        $driver = $vehicle->drivers->filter(function($d) use ($targetDate) {
+            $start = $d->start_date ? Carbon::parse($d->start_date)->startOfDay() : null;
+            $leave = $d->leave_date ? Carbon::parse($d->leave_date)->startOfDay() : null;
+            if ($start && $targetDate->lt($start)) return false;
+            if ($leave && $targetDate->gt($leave)) return false;
+            return true;
+        })->first();
+        
+        return $driver ? $driver->id : null;
     }
 }

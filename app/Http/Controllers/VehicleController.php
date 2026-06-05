@@ -376,14 +376,68 @@ class VehicleController extends Controller
             })->get();
 
         $historyMap = [];
+        $defaultDriver = $vehicle->drivers->where('is_active', true)->first() ?? $vehicle->drivers->first();
+
         foreach ($allVehicleTrips as $trip) {
             $driversDrove = [];
             
-            if ($trip->morning_vehicle_id == $vehicle->id || ($trip->vehicle_id == $vehicle->id && !$trip->morning_vehicle_id)) {
-                $driversDrove[] = ['id' => $trip->morning_driver_id ?? $trip->driver_id, 'model' => $trip->morningDriver ?? $trip->driver];
+            $mVehicleId = $trip->morning_vehicle_id ?? $trip->vehicle_id;
+            $eVehicleId = $trip->evening_vehicle_id ?? $trip->vehicle_id;
+            
+            // Morning
+            if ($mVehicleId == $vehicle->id) {
+                $dId = $trip->morning_driver_id;
+                $dModel = $trip->morningDriver;
+                
+                if (!$dId && $trip->driver_id) {
+                    $isAmbiguous = $mVehicleId && $eVehicleId && ($mVehicleId != $eVehicleId);
+                    if ($isAmbiguous) {
+                        if ($trip->driver?->vehicle_id == $vehicle->id) {
+                            $dId = $trip->driver_id;
+                            $dModel = $trip->driver;
+                        }
+                    } else {
+                        $dId = $trip->driver_id;
+                        $dModel = $trip->driver;
+                    }
+                }
+                
+                if (!$dId) {
+                    $dId = $defaultDriver?->id;
+                    $dModel = $defaultDriver;
+                }
+                
+                if ($dId) {
+                    $driversDrove[] = ['id' => $dId, 'model' => $dModel];
+                }
             }
-            if ($trip->evening_vehicle_id == $vehicle->id || ($trip->vehicle_id == $vehicle->id && !$trip->evening_vehicle_id)) {
-                $driversDrove[] = ['id' => $trip->evening_driver_id ?? $trip->driver_id, 'model' => $trip->eveningDriver ?? $trip->driver];
+            
+            // Evening
+            if ($eVehicleId == $vehicle->id) {
+                $dId = $trip->evening_driver_id;
+                $eModel = $trip->eveningDriver;
+                
+                if (!$dId && $trip->driver_id) {
+                    $isAmbiguous = $mVehicleId && $eVehicleId && ($mVehicleId != $eVehicleId);
+                    if ($isAmbiguous) {
+                        if ($trip->driver?->vehicle_id == $vehicle->id) {
+                            $dId = $trip->driver_id;
+                            $eModel = $trip->driver;
+                        }
+                    } else {
+                        $dId = $trip->driver_id;
+                        $eModel = $trip->driver;
+                    }
+                }
+                
+                if (!$dId) {
+                    $dId = $defaultDriver?->id;
+                    $eModel = $defaultDriver;
+                }
+                
+                if ($dId) {
+                    $driversDrove[] = ['id' => $dId, 'model' => $eModel];
+                }
             }
             
             $driversDrove = collect($driversDrove)->unique('id')->all();

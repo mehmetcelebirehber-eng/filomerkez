@@ -367,6 +367,40 @@ class VehicleController extends Controller
 
         $monthlyReports = collect($monthlyReports)->values();
 
+        $allVehicleTrips = Trip::with(['morningDriver', 'eveningDriver', 'driver'])
+            ->where('company_id', $vehicle->company_id)
+            ->where(function ($q) use ($vehicle) {
+                $q->where('vehicle_id', $vehicle->id)
+                  ->orWhere('morning_vehicle_id', $vehicle->id)
+                  ->orWhere('evening_vehicle_id', $vehicle->id);
+            })->get();
+
+        $historyMap = [];
+        foreach ($allVehicleTrips as $trip) {
+            $driversDrove = [];
+            
+            if ($trip->morning_vehicle_id == $vehicle->id || ($trip->vehicle_id == $vehicle->id && !$trip->morning_vehicle_id)) {
+                $driversDrove[] = ['id' => $trip->morning_driver_id ?? $trip->driver_id, 'model' => $trip->morningDriver ?? $trip->driver];
+            }
+            if ($trip->evening_vehicle_id == $vehicle->id || ($trip->vehicle_id == $vehicle->id && !$trip->evening_vehicle_id)) {
+                $driversDrove[] = ['id' => $trip->evening_driver_id ?? $trip->driver_id, 'model' => $trip->eveningDriver ?? $trip->driver];
+            }
+            
+            $driversDrove = collect($driversDrove)->unique('id')->all();
+            
+            foreach ($driversDrove as $d) {
+                $dId = $d['id'];
+                if (!$dId) continue;
+                if (!isset($historyMap[$dId])) {
+                    $historyMap[$dId] = ['driver' => $d['model'], 'start' => $trip->trip_date, 'end' => $trip->trip_date, 'count' => 0];
+                }
+                $historyMap[$dId]['count']++;
+                if ($trip->trip_date < $historyMap[$dId]['start']) $historyMap[$dId]['start'] = $trip->trip_date;
+                if ($trip->trip_date > $historyMap[$dId]['end']) $historyMap[$dId]['end'] = $trip->trip_date;
+            }
+        }
+        $driverHistory = collect($historyMap)->sortByDesc('end')->values();
+
         $latestFuelRecord = $recentFuels
             ->sortByDesc(function ($item) {
                 return sprintf(
@@ -427,7 +461,8 @@ class VehicleController extends Controller
             'arventoStats',
             'reportsMonth',
             'monthlyReports',
-            'reportTotals'
+            'reportTotals',
+            'driverHistory'
         ));
     }
 

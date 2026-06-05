@@ -269,6 +269,44 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    @if(isset($vehicleHistory) && $vehicleHistory->count() > 0)
+                                    <div class="border-t border-slate-100 p-6">
+                                        <div class="mb-4">
+                                            <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest">Araç Kullanım Geçmişi</h4>
+                                            <p class="mt-1 text-xs text-slate-500">Puantajlara göre personelin kullandığı araçlar ve tarih aralıkları</p>
+                                        </div>
+                                        <div class="grid gap-4 md:grid-cols-2">
+                                            @foreach($vehicleHistory as $history)
+                                                <div class="group flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 hover:bg-white hover:shadow-md hover:border-indigo-100 transition-all duration-300">
+                                                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 font-black text-lg group-hover:scale-110 transition-transform">
+                                                        🚐
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <div class="font-black text-slate-800 text-sm">
+                                                            @if($history['vehicle'])
+                                                                <a href="{{ route('vehicles.show', $history['vehicle']->id) }}" class="hover:text-indigo-600 transition-colors">
+                                                                    {{ $history['vehicle']->plate }}
+                                                                </a>
+                                                            @else
+                                                                Bilinmeyen Araç
+                                                            @endif
+                                                        </div>
+                                                        <div class="mt-1 text-xs font-semibold text-slate-500">
+                                                            {{ \Carbon\Carbon::parse($history['start'])->format('d.m.Y') }} - {{ \Carbon\Carbon::parse($history['end'])->format('d.m.Y') }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <div class="inline-flex flex-col items-end">
+                                                            <span class="text-base font-black text-indigo-600">{{ $history['count'] }}</span>
+                                                            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sefer</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    @endif
                                 </div>
 
                                 <div class="xl:col-span-4 space-y-6">

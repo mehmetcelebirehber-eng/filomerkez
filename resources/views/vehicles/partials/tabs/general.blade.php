@@ -132,6 +132,50 @@
                 @endif
             </div>
         </div>
+
+        {{-- Driver History (Puantaj Geçmişi) --}}
+        @if(isset($driverHistory) && $driverHistory->count() > 0)
+            <div class="rounded-[40px] overflow-hidden bg-white shadow-2xl border border-slate-100 group transition-all duration-500 hover:shadow-slate-200 mt-8">
+                <div class="border-b border-slate-100 px-8 py-6 bg-slate-50 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-800 tracking-tight">Şoför Kullanım Geçmişi</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Puantajlara Göre Aracı Kullanan Personeller</p>
+                    </div>
+                    <span class="text-2xl">🧑‍✈️</span>
+                </div>
+                <div class="p-8">
+                    <div class="grid gap-4 md:grid-cols-2">
+                        @foreach($driverHistory as $history)
+                            <div class="group flex items-center gap-4 rounded-3xl border border-slate-100 bg-white p-5 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all duration-300">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 font-black text-lg group-hover:scale-110 transition-transform">
+                                    {{ mb_substr(optional($history['driver'])->full_name ?? 'B', 0, 1) }}
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-black text-slate-800 text-sm">
+                                        @if($history['driver'])
+                                            <a href="{{ route('drivers.show', $history['driver']->id) }}" class="hover:text-indigo-600 transition-colors">
+                                                {{ $history['driver']->full_name }}
+                                            </a>
+                                        @else
+                                            Bilinmeyen Personel
+                                        @endif
+                                    </div>
+                                    <div class="mt-1 text-xs font-semibold text-slate-500">
+                                        {{ \Carbon\Carbon::parse($history['start'])->format('d.m.Y') }} - {{ \Carbon\Carbon::parse($history['end'])->format('d.m.Y') }}
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="inline-flex flex-col items-end">
+                                        <span class="text-lg font-black text-indigo-600">{{ $history['count'] }}</span>
+                                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sefer</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 
     <div class="xl:col-span-4 space-y-8">

@@ -306,6 +306,40 @@ class DriverController extends Controller
 
         $driverDocumentTypes = $this->driverDocumentTypes;
 
+        $allDriverTrips = \App\Models\Trip::with(['vehicle', 'morningVehicle', 'eveningVehicle'])
+            ->where('company_id', $driver->company_id)
+            ->where(function ($q) use ($driver) {
+                $q->where('driver_id', $driver->id)
+                  ->orWhere('morning_driver_id', $driver->id)
+                  ->orWhere('evening_driver_id', $driver->id);
+            })->get();
+
+        $vehicleHistoryMap = [];
+        foreach ($allDriverTrips as $trip) {
+            $vehiclesDriven = [];
+            
+            if ($trip->morning_driver_id == $driver->id || ($trip->driver_id == $driver->id && !$trip->morning_driver_id)) {
+                $vehiclesDriven[] = ['id' => $trip->morning_vehicle_id ?? $trip->vehicle_id, 'model' => $trip->morningVehicle ?? $trip->vehicle];
+            }
+            if ($trip->evening_driver_id == $driver->id || ($trip->driver_id == $driver->id && !$trip->evening_driver_id)) {
+                $vehiclesDriven[] = ['id' => $trip->evening_vehicle_id ?? $trip->vehicle_id, 'model' => $trip->eveningVehicle ?? $trip->vehicle];
+            }
+            
+            $vehiclesDriven = collect($vehiclesDriven)->unique('id')->all();
+            
+            foreach ($vehiclesDriven as $v) {
+                $vId = $v['id'];
+                if (!$vId) continue;
+                if (!isset($vehicleHistoryMap[$vId])) {
+                    $vehicleHistoryMap[$vId] = ['vehicle' => $v['model'], 'start' => $trip->trip_date, 'end' => $trip->trip_date, 'count' => 0];
+                }
+                $vehicleHistoryMap[$vId]['count']++;
+                if ($trip->trip_date < $vehicleHistoryMap[$vId]['start']) $vehicleHistoryMap[$vId]['start'] = $trip->trip_date;
+                if ($trip->trip_date > $vehicleHistoryMap[$vId]['end']) $vehicleHistoryMap[$vId]['end'] = $trip->trip_date;
+            }
+        }
+        $vehicleHistory = collect($vehicleHistoryMap)->sortByDesc('end')->values();
+
         return view('drivers.show', compact(
             'driver',
             'activeTab',
@@ -322,7 +356,8 @@ class DriverController extends Controller
             'featuredImage',
             'totalNetSalary',
             'totalGrossSalary',
-            'driverDocumentTypes'
+            'driverDocumentTypes',
+            'vehicleHistory'
         ));
     }
 

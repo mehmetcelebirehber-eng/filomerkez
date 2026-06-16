@@ -20,8 +20,16 @@ class VehicleController extends Controller
         $query = Vehicle::where('company_id', $companyId)->with(['drivers', 'documents' => fn($q) => $q->whereNull('archived_at')]);
 
         if ($request->filter === 'upcoming_inspection') {
-            $query->whereNotNull('inspection_date')
-                  ->where('inspection_date', '<=', now()->addDays(30));
+            $query->where(function ($q) {
+                $q->whereNotNull('inspection_date')
+                  ->where('inspection_date', '<=', now()->addDays(10))
+                  ->orWhereHas('documents', function ($doc) {
+                      $doc->whereIn('document_type', ['Muayene', 'Muayene Raporu'])
+                          ->whereNotNull('end_date')
+                          ->where('end_date', '<=', now()->addDays(10))
+                          ->whereNull('archived_at');
+                  });
+            });
         } elseif ($request->filter === 'upcoming_insurance') {
             $query->where(function ($q) {
                 $q->whereNotNull('insurance_end_date')
@@ -83,9 +91,16 @@ class VehicleController extends Controller
         $kpi = [
             'total' => Vehicle::where('company_id', $companyId)->count(),
             'upcoming_inspection' => Vehicle::where('company_id', $companyId)
-                ->whereNotNull('inspection_date')
-                ->where('inspection_date', '<=', now()->addDays(30))
-                ->count(),
+                ->where(function ($q) {
+                    $q->whereNotNull('inspection_date')
+                      ->where('inspection_date', '<=', now()->addDays(10))
+                      ->orWhereHas('documents', function ($doc) {
+                          $doc->whereIn('document_type', ['Muayene', 'Muayene Raporu'])
+                              ->whereNotNull('end_date')
+                              ->where('end_date', '<=', now()->addDays(10))
+                              ->whereNull('archived_at');
+                      });
+                })->count(),
             'upcoming_insurance' => Vehicle::where('company_id', $companyId)
                 ->where(function ($q) {
                     $q->whereNotNull('insurance_end_date')

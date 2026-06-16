@@ -67,8 +67,17 @@ class VehicleController extends Controller
             ->when($type !== '', fn ($q) => $q->where('vehicle_type', $type))
             ->when($status === 'active', fn ($q) => $q->where('is_active', true))
             ->when($status === 'passive', fn ($q) => $q->where('is_active', false))
-            ->when($specialFilter === 'upcoming_inspection', fn ($q) => $q->whereNotNull('inspection_date')->where('inspection_date', '<=', now()->addDays(30)))
-            ->when($specialFilter === 'upcoming_insurance', function ($q) {
+            ->when($specialFilter === 'upcoming_inspection', function ($q) {
+                $q->where(function ($sub) {
+                    $sub->whereNotNull('inspection_date')->where('inspection_date', '<=', now()->addDays(10))
+                        ->orWhereHas('documents', function ($doc) {
+                            $doc->whereIn('document_type', ['Muayene', 'Muayene Raporu'])
+                                ->whereNotNull('end_date')
+                                ->where('end_date', '<=', now()->addDays(10))
+                                ->whereNull('archived_at');
+                        });
+                });
+            })
                 $q->where(function ($sub) {
                     $sub->whereNotNull('insurance_end_date')->where('insurance_end_date', '<=', now()->addDays(10))
                         ->orWhereHas('documents', function ($doc) {
@@ -87,7 +96,15 @@ class VehicleController extends Controller
         // KPI İstatistikleri
         $kpi = [
             'total' => Vehicle::count(),
-            'upcoming_inspection' => Vehicle::whereNotNull('inspection_date')->where('inspection_date', '<=', now()->addDays(30))->count(),
+            'upcoming_inspection' => Vehicle::where(function ($q) {
+                $q->whereNotNull('inspection_date')->where('inspection_date', '<=', now()->addDays(10))
+                  ->orWhereHas('documents', function ($doc) {
+                      $doc->whereIn('document_type', ['Muayene', 'Muayene Raporu'])
+                          ->whereNotNull('end_date')
+                          ->where('end_date', '<=', now()->addDays(10))
+                          ->whereNull('archived_at');
+                  });
+            })->count(),
             'upcoming_insurance' => Vehicle::where(function ($q) {
                 $q->whereNotNull('insurance_end_date')->where('insurance_end_date', '<=', now()->addDays(10))
                   ->orWhereHas('documents', function ($doc) {

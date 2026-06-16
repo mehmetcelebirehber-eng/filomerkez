@@ -379,23 +379,35 @@
                                         @endif
                                     </div>
                                     
-                                    @if(request('filter') === 'upcoming_inspection' && $vehicle->inspection_date)
+                                    @if(request('filter') === 'upcoming_inspection')
                                         @php
-                                            $inspectionDate = \Carbon\Carbon::parse($vehicle->inspection_date);
-                                            $diffDays = now()->startOfDay()->diffInDays($inspectionDate->startOfDay(), false);
-                                            $isOverdue = $diffDays < 0;
-                                            $absDays = abs(intval($diffDays));
-                                        @endphp
-                                        <div class="p-3 rounded-2xl flex flex-col gap-2 w-48 {{ $isOverdue ? 'bg-rose-50 border border-rose-100' : 'bg-amber-50 border border-amber-100' }} shadow-sm">
-                                            <div>
-                                                <div class="text-[10px] font-black uppercase tracking-widest {{ $isOverdue ? 'text-rose-600' : 'text-amber-600' }}">
-                                                    Son Tarih: {{ $inspectionDate->format('d.m.Y') }}
-                                                </div>
-                                                <div class="text-[11px] font-black mt-0.5 {{ $isOverdue ? 'text-rose-600' : 'text-amber-600' }}">
-                                                    {{ $isOverdue ? "$absDays GÜN GECİKTİ!" : "$absDays GÜN KALDI" }}
-                                                </div>
-                                            </div>
+                                            $inspectionDoc = $vehicle->documents->whereIn('document_type', ['Muayene', 'Muayene Raporu'])->whereNull('archived_at')->sortByDesc('end_date')->first();
+                                            $docDate = $inspectionDoc && $inspectionDoc->end_date ? \Carbon\Carbon::parse($inspectionDoc->end_date) : null;
+                                            $vehDate = $vehicle->inspection_date ? \Carbon\Carbon::parse($vehicle->inspection_date) : null;
                                             
+                                            $inspectionDate = null;
+                                            if ($docDate && $vehDate) {
+                                                $inspectionDate = $docDate->gt($vehDate) ? $docDate : $vehDate;
+                                            } else {
+                                                $inspectionDate = $docDate ?: $vehDate;
+                                            }
+                                        @endphp
+                                        @if($inspectionDate)
+                                            @php
+                                                $diffDays = now()->startOfDay()->diffInDays($inspectionDate->startOfDay(), false);
+                                                $isOverdue = $diffDays < 0;
+                                                $absDays = abs(intval($diffDays));
+                                            @endphp
+                                            <div class="p-3 rounded-2xl flex flex-col gap-2 w-48 {{ $isOverdue ? 'bg-rose-50 border border-rose-100' : 'bg-amber-50 border border-amber-100' }} shadow-sm">
+                                                <div>
+                                                    <div class="text-[10px] font-black uppercase tracking-widest {{ $isOverdue ? 'text-rose-600' : 'text-amber-600' }}">
+                                                        Son Tarih: {{ $inspectionDate->format('d.m.Y') }}
+                                                    </div>
+                                                    <div class="text-[11px] font-black mt-0.5 {{ $isOverdue ? 'text-rose-600' : 'text-amber-600' }}">
+                                                        {{ $isOverdue ? "$absDays GÜN GECİKTİ!" : "$absDays GÜN KALDI" }}
+                                                    </div>
+                                                </div>
+                                                
                                             <div class="flex flex-col gap-1.5 mt-1" x-data="{ copyPlate: false, copySerial: false }">
                                                 <div class="flex gap-1.5">
                                                     <button type="button" @click="navigator.clipboard.writeText('{{ $vehicle->plate }}'); copyPlate = true; setTimeout(() => copyPlate = false, 2000);" 
@@ -419,6 +431,7 @@
                                                 </a>
                                             </div>
                                         </div>
+                                        @endif
                                     @endif
 
                                     @if(request('filter') === 'upcoming_insurance')

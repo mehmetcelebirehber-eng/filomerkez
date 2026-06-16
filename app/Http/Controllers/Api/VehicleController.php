@@ -17,14 +17,22 @@ class VehicleController extends Controller
     public function index(Request $request)
     {
         $companyId = $request->user()->company_id;
-        $query = Vehicle::where('company_id', $companyId)->with(['drivers']);
+        $query = Vehicle::where('company_id', $companyId)->with(['drivers', 'documents' => fn($q) => $q->whereNull('archived_at')]);
 
         if ($request->filter === 'upcoming_inspection') {
             $query->whereNotNull('inspection_date')
                   ->where('inspection_date', '<=', now()->addDays(30));
         } elseif ($request->filter === 'upcoming_insurance') {
-            $query->whereNotNull('insurance_end_date')
-                  ->where('insurance_end_date', '<=', now()->addDays(10));
+            $query->where(function ($q) {
+                $q->whereNotNull('insurance_end_date')
+                  ->where('insurance_end_date', '<=', now()->addDays(10))
+                  ->orWhereHas('documents', function ($doc) {
+                      $doc->whereIn('document_type', ['Sigorta', 'Sigorta Poliçesi'])
+                          ->whereNotNull('end_date')
+                          ->where('end_date', '<=', now()->addDays(10))
+                          ->whereNull('archived_at');
+                  });
+            });
         }
 
         if ($request->filled('status')) {
@@ -43,6 +51,11 @@ class VehicleController extends Controller
 
             $driver = $vehicle->drivers()->latest()->first();
             
+            $insuranceDoc = $vehicle->documents->whereIn('document_type', ['Sigorta', 'Sigorta Poliçesi'])->sortByDesc('end_date')->first();
+            $docDate = $insuranceDoc && $insuranceDoc->end_date ? \Carbon\Carbon::parse($insuranceDoc->end_date) : null;
+            $vehDate = $vehicle->insurance_end_date ? \Carbon\Carbon::parse($vehicle->insurance_end_date) : null;
+            $insuranceDate = $docDate && $vehDate ? ($docDate->gt($vehDate) ? $docDate : $vehDate) : ($docDate ?: $vehDate);
+
             return [
                 'id' => $vehicle->id,
                 'plate' => $vehicle->plate,
@@ -54,7 +67,7 @@ class VehicleController extends Controller
                 'status' => $vehicle->is_active ? 'active' : 'passive',
                 'current_km' => (int) $currentKm,
                 'inspection_date' => $vehicle->inspection_date,
-                'insurance_end_date' => $vehicle->insurance_end_date,
+                'insurance_end_date' => $insuranceDate ? $insuranceDate->toDateString() : null,
                 'engine_no' => $vehicle->engine_no,
                 'chassis_no' => $vehicle->chassis_no,
                 'fuel_type' => $vehicle->fuel_type,
@@ -74,8 +87,16 @@ class VehicleController extends Controller
                 ->where('inspection_date', '<=', now()->addDays(30))
                 ->count(),
             'upcoming_insurance' => Vehicle::where('company_id', $companyId)
-                ->whereNotNull('insurance_end_date')
-                ->where('insurance_end_date', '<=', now()->addDays(10))
+                ->where(function ($q) {
+                    $q->whereNotNull('insurance_end_date')
+                      ->where('insurance_end_date', '<=', now()->addDays(10))
+                      ->orWhereHas('documents', function ($doc) {
+                          $doc->whereIn('document_type', ['Sigorta', 'Sigorta Poliçesi'])
+                              ->whereNotNull('end_date')
+                              ->where('end_date', '<=', now()->addDays(10))
+                              ->whereNull('archived_at');
+                      });
+                })
                 ->count(),
         ];
 

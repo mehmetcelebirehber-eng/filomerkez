@@ -68,7 +68,17 @@ class VehicleController extends Controller
             ->when($status === 'active', fn ($q) => $q->where('is_active', true))
             ->when($status === 'passive', fn ($q) => $q->where('is_active', false))
             ->when($specialFilter === 'upcoming_inspection', fn ($q) => $q->whereNotNull('inspection_date')->where('inspection_date', '<=', now()->addDays(30)))
-            ->when($specialFilter === 'upcoming_insurance', fn ($q) => $q->whereNotNull('insurance_end_date')->where('insurance_end_date', '<=', now()->addDays(10)))
+            ->when($specialFilter === 'upcoming_insurance', function ($q) {
+                $q->where(function ($sub) {
+                    $sub->whereNotNull('insurance_end_date')->where('insurance_end_date', '<=', now()->addDays(10))
+                        ->orWhereHas('documents', function ($doc) {
+                            $doc->whereIn('document_type', ['Sigorta', 'Sigorta Poliçesi'])
+                                ->whereNotNull('end_date')
+                                ->where('end_date', '<=', now()->addDays(10))
+                                ->whereNull('archived_at');
+                        });
+                });
+            })
             ->when($specialFilter === 'no_driver', fn ($q) => $q->whereDoesntHave('drivers', fn($d) => $d->where('is_active', true)))
             ->latest()
             ->paginate(100)
@@ -78,7 +88,15 @@ class VehicleController extends Controller
         $kpi = [
             'total' => Vehicle::count(),
             'upcoming_inspection' => Vehicle::whereNotNull('inspection_date')->where('inspection_date', '<=', now()->addDays(30))->count(),
-            'upcoming_insurance' => Vehicle::whereNotNull('insurance_end_date')->where('insurance_end_date', '<=', now()->addDays(10))->count(),
+            'upcoming_insurance' => Vehicle::where(function ($q) {
+                $q->whereNotNull('insurance_end_date')->where('insurance_end_date', '<=', now()->addDays(10))
+                  ->orWhereHas('documents', function ($doc) {
+                      $doc->whereIn('document_type', ['Sigorta', 'Sigorta Poliçesi'])
+                          ->whereNotNull('end_date')
+                          ->where('end_date', '<=', now()->addDays(10))
+                          ->whereNull('archived_at');
+                  });
+            })->count(),
             'no_driver' => Vehicle::whereDoesntHave('drivers', fn($d) => $d->where('is_active', true))->count(),
             'types' => Vehicle::selectRaw('vehicle_type, count(*) as count')->groupBy('vehicle_type')->pluck('count', 'vehicle_type')->toArray(),
         ];

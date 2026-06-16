@@ -421,23 +421,36 @@
                                         </div>
                                     @endif
 
-                                    @if(request('filter') === 'upcoming_insurance' && $vehicle->insurance_end_date)
+                                    @if(request('filter') === 'upcoming_insurance')
                                         @php
-                                            $insuranceDate = \Carbon\Carbon::parse($vehicle->insurance_end_date);
-                                            $diffDays = now()->startOfDay()->diffInDays($insuranceDate->startOfDay(), false);
-                                            $isOverdue = $diffDays < 0;
-                                            $absDays = abs(intval($diffDays));
+                                            $insuranceDoc = $vehicle->documents->whereIn('document_type', ['Sigorta', 'Sigorta Poliçesi'])->whereNull('archived_at')->sortByDesc('end_date')->first();
+                                            $docDate = $insuranceDoc && $insuranceDoc->end_date ? \Carbon\Carbon::parse($insuranceDoc->end_date) : null;
+                                            $vehDate = $vehicle->insurance_end_date ? \Carbon\Carbon::parse($vehicle->insurance_end_date) : null;
+                                            
+                                            $insuranceDate = null;
+                                            if ($docDate && $vehDate) {
+                                                $insuranceDate = $docDate->gt($vehDate) ? $docDate : $vehDate;
+                                            } else {
+                                                $insuranceDate = $docDate ?: $vehDate;
+                                            }
                                         @endphp
-                                        <div class="p-3 rounded-2xl flex flex-col gap-2 w-48 {{ $isOverdue ? 'bg-rose-50 border border-rose-100' : 'bg-fuchsia-50 border border-fuchsia-100' }} shadow-sm">
-                                            <div>
-                                                <div class="text-[10px] font-black uppercase tracking-widest {{ $isOverdue ? 'text-rose-600' : 'text-fuchsia-600' }}">
-                                                    Poliçe Bitiş: {{ $insuranceDate->format('d.m.Y') }}
-                                                </div>
-                                                <div class="text-[11px] font-black mt-0.5 {{ $isOverdue ? 'text-rose-600' : 'text-fuchsia-600' }}">
-                                                    {{ $isOverdue ? "$absDays GÜN GECİKTİ!" : "$absDays GÜN KALDI" }}
+                                        @if($insuranceDate)
+                                            @php
+                                                $diffDays = now()->startOfDay()->diffInDays($insuranceDate->startOfDay(), false);
+                                                $isOverdue = $diffDays < 0;
+                                                $absDays = abs(intval($diffDays));
+                                            @endphp
+                                            <div class="p-3 rounded-2xl flex flex-col gap-2 w-48 {{ $isOverdue ? 'bg-rose-50 border border-rose-100' : 'bg-fuchsia-50 border border-fuchsia-100' }} shadow-sm">
+                                                <div>
+                                                    <div class="text-[10px] font-black uppercase tracking-widest {{ $isOverdue ? 'text-rose-600' : 'text-fuchsia-600' }}">
+                                                        Poliçe Bitiş: {{ $insuranceDate->format('d.m.Y') }}
+                                                    </div>
+                                                    <div class="text-[11px] font-black mt-0.5 {{ $isOverdue ? 'text-rose-600' : 'text-fuchsia-600' }}">
+                                                        {{ $isOverdue ? "$absDays GÜN GECİKTİ!" : "$absDays GÜN KALDI" }}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        @endif
                                     @endif
                                 </div>
                             </td>

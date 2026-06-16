@@ -78,6 +78,7 @@ class VehicleController extends Controller
                         });
                 });
             })
+            ->when($specialFilter === 'upcoming_insurance', function ($q) {
                 $q->where(function ($sub) {
                     $sub->whereNotNull('insurance_end_date')->where('insurance_end_date', '<=', now()->addDays(10))
                         ->orWhereHas('documents', function ($doc) {

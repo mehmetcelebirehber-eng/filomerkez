@@ -1,13 +1,11 @@
 ---
 deployment:
   tasks:
-    # 1. Laravel paketlerini kurar (Gelistirici paketleri haric)
+    - export DEPLOYPATH=/home/u2515454/public_html
+    - /bin/cp -R * $DEPLOYPATH
+    - cd $DEPLOYPATH
     - composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
-    
-    # 2. Veritabanini otomatik gunceller
     - php artisan migrate --force
-    
-    # 3. Eski onbellekleri temizler ve sistemi hizlandirir
     - php artisan optimize:clear
     - php artisan config:cache
     - php artisan route:cache

@@ -24,7 +24,7 @@ class VehicleController extends Controller
                   ->where('inspection_date', '<=', now()->addDays(30));
         } elseif ($request->filter === 'upcoming_insurance') {
             $query->whereNotNull('insurance_end_date')
-                  ->where('insurance_end_date', '<=', now()->addDays(30));
+                  ->where('insurance_end_date', '<=', now()->addDays(10));
         }
 
         if ($request->filled('status')) {
@@ -75,7 +75,7 @@ class VehicleController extends Controller
                 ->count(),
             'upcoming_insurance' => Vehicle::where('company_id', $companyId)
                 ->whereNotNull('insurance_end_date')
-                ->where('insurance_end_date', '<=', now()->addDays(30))
+                ->where('insurance_end_date', '<=', now()->addDays(10))
                 ->count(),
         ];
 

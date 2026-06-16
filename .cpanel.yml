@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/u2515454/public_html/app
+    - export DEPLOYPATH=/home/u2545454/public_html/app
     - /bin/cp -R * $DEPLOYPATH
     - cd $DEPLOYPATH
     - composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev

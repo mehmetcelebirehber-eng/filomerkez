@@ -303,7 +303,7 @@
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <div class="text-sm font-black text-slate-800 truncate">{{ $document->document_name }}</div>
-                                    <div class="text-[10px] font-bold text-slate-400 truncate">{{ $document->documentable?->plate ?? $document->documentable?->full_name ?? 'Genel' }}</div>
+                                    <div class="text-[10px] font-bold text-slate-400 truncate">{{ $document->documentable?->plate ?? $document->documentable?->full_name ?? $document->documentable?->route_name ?? 'Genel' }}</div>
                                 </div>
                                 <div class="text-right">
                                     <div class="text-[10px] font-black text-slate-500">{{ $document->end_date?->format('d/m/Y') }}</div>

@@ -21,6 +21,11 @@ class AppServiceProvider extends ServiceProvider
     {
         \Illuminate\Support\Facades\Schema::defaultStringLength(191);
         
+        \Illuminate\Database\Eloquent\Relations\Relation::morphMap([
+            'route_vehicle' => \App\Models\CustomerServiceRoute::class,
+            'route_driver' => \App\Models\CustomerServiceRoute::class,
+        ]);
+        
         // Global Ayarları Mailer'a Uygula
         try {
             if (\Illuminate\Support\Facades\Schema::hasTable('global_settings')) {

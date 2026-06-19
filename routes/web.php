@@ -57,6 +57,17 @@ Route::get('/run-migrations-secret', function () {
     }
 });
 
+Route::get('/clear-cache-secret', function() {
+    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+    \Illuminate\Support\Facades\Artisan::call('cache:clear');
+    \Illuminate\Support\Facades\Artisan::call('view:clear');
+    \Illuminate\Support\Facades\Artisan::call('config:clear');
+    if (function_exists('opcache_reset')) {
+        opcache_reset();
+    }
+    return 'Tüm önbellekler (Cache, Config, Views, OPcache) başarıyla temizlendi!';
+});
+
 Route::get('/', function () {
     return redirect()->route('login');
 });

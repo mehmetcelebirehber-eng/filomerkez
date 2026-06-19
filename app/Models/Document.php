@@ -42,6 +42,10 @@ class Document extends Model
 
     public function documentable(): MorphTo
     {
+        if (in_array($this->documentable_type, ['route_driver', 'route_vehicle'])) {
+            $this->documentable_type = \App\Models\CustomerServiceRoute::class;
+        }
+        
         return $this->morphTo();
     }
 

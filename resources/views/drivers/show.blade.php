@@ -768,7 +768,7 @@
     <div id="changeVehicleModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
         <div class="w-full max-w-md rounded-[32px] bg-white p-8 shadow-2xl">
             <h3 class="text-2xl font-black text-slate-900">🚐 Araç Değiştir / Ata</h3>
-            <p class="mt-2 text-sm text-slate-500 font-medium">Şoförü atamak istediğiniz aracı seçin.</p>
+            <p class="mt-2 text-sm text-slate-500 font-medium">Şoförü atamak istediğiniz aracı ve zimmet başlangıç tarihini seçin.</p>
             
             <form action="{{ route('drivers.change-vehicle', $driver) }}" method="POST" class="mt-6 space-y-5">
                 @csrf
@@ -782,6 +782,23 @@
                                 {{ $v->plate }} ({{ $v->brand }} {{ $v->model }})
                             </option>
                         @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-400">Zimmet Başlangıç Tarihi</label>
+                    <input type="date" name="assignment_date" value="{{ date('Y-m-d') }}" required
+                           class="w-full rounded-2xl border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:ring-blue-500">
+                    <p class="mt-1 text-xs text-slate-400">Bu tarihten itibaren yeni araç atanacak. Eski zimmet otomatik kapanır.</p>
+                </div>
+
+                <div>
+                    <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-400">Başlangıç Vardiyası</label>
+                    <select name="assignment_shift" required
+                            class="w-full rounded-2xl border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:ring-blue-500">
+                        <option value="morning">Sabah Seferinden İtibaren</option>
+                        <option value="evening">Akşam Seferinden İtibaren</option>
+                        <option value="full_day">Tüm Gün</option>
                     </select>
                 </div>
 

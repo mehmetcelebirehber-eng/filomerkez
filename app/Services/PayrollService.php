@@ -4,11 +4,14 @@ namespace App\Services;
 
 use App\Models\Trip;
 use App\Models\Fleet\Driver;
+use App\Models\DriverVehicleAssignment;
 use Carbon\Carbon;
 
 class PayrollService
 {
     /**
+     * Aylık maaş hesaplama.
+     * Zimmet geçmişi tablosundan şoförün o aydaki tüm araçlarını bulur.
      */
     public function calculateMonthlyPayroll(Driver $driver, $month, $year)
     {
@@ -18,20 +21,11 @@ class PayrollService
         $driverStart = $driver->start_date ? Carbon::parse($driver->start_date)->startOfDay() : null;
         $driverLeave = $driver->leave_date ? Carbon::parse($driver->leave_date)->endOfDay() : null;
 
-        // Araç ID'si yoksa ama eski bir şoförse, son çalıştığı aracı bulmaya çalışalım
-        $effectiveVehicleId = $driver->vehicle_id;
-        if (!$effectiveVehicleId) {
-            $lastTripWithVehicle = Trip::where('driver_id', $driver->id)
-                ->whereNotNull('vehicle_id')
-                ->orderBy('trip_date', 'desc')
-                ->first();
-            if ($lastTripWithVehicle) {
-                $effectiveVehicleId = $lastTripWithVehicle->vehicle_id;
-            }
-        }
+        // --- ARAÇ ZİMMET GEÇMİŞİNDEN O AYDAKİ TÜM ARAÇLARI BUL ---
+        $vehicleIdsInMonth = $this->resolveVehicleIdsForPeriod($driver, $startDate, $endDate);
 
         $trips = Trip::with(['serviceRoute', 'morningDriver', 'eveningDriver'])
-            ->where(function ($q) use ($driver, $effectiveVehicleId) {
+            ->where(function ($q) use ($driver, $vehicleIdsInMonth) {
                 // 1. Şoför ID'si doğrudan eşleşenler
                 $q->where('driver_id', $driver->id);
                 
@@ -39,12 +33,12 @@ class PayrollService
                 $q->orWhere('morning_driver_id', $driver->id)
                   ->orWhere('evening_driver_id', $driver->id);
 
-                // 3. Şoför ID'si eşleşmese bile araç şoförün aracıysa
-                if ($effectiveVehicleId) {
-                    $q->orWhere(function ($sq) use ($effectiveVehicleId) {
-                        $sq->where('vehicle_id', $effectiveVehicleId)
-                           ->orWhere('morning_vehicle_id', $effectiveVehicleId)
-                           ->orWhere('evening_vehicle_id', $effectiveVehicleId);
+                // 3. Şoför ID'si eşleşmese bile araç şoförün o aydaki araçlarından biriyse
+                if (!empty($vehicleIdsInMonth)) {
+                    $q->orWhere(function ($sq) use ($vehicleIdsInMonth) {
+                        $sq->whereIn('vehicle_id', $vehicleIdsInMonth)
+                           ->orWhereIn('morning_vehicle_id', $vehicleIdsInMonth)
+                           ->orWhereIn('evening_vehicle_id', $vehicleIdsInMonth);
                     });
                 }
             })
@@ -109,6 +103,9 @@ class PayrollService
         $groupedDetails = [];
         $totalExtraEarnings = 0;
         
+        // Zimmet geçmişi kayıtlarını önbelleğe al (her trip için tek tek sorgu atmamak için)
+        $assignmentHistory = $driver->vehicleAssignmentsInRange($startDate, $endDate);
+        
         foreach ($trips as $trip) {
             $route = $trip->serviceRoute;
             if (!$route) continue;
@@ -148,22 +145,25 @@ class PayrollService
             $effectiveMorningVehicleOnTrip = $trip->morning_vehicle_id ?: $route->morning_vehicle_id;
             $effectiveEveningVehicleOnTrip = $trip->evening_vehicle_id ?: $route->evening_vehicle_id;
 
+            // O gün şoförün hangi araçta olduğunu zimmet geçmişinden bul
+            $vehicleIdOnTripDate = $this->resolveVehicleIdOnDate($driver, $tripDate, $assignmentHistory);
+
             // Yeni Yapı: Farklı Şoför (Sabah/Akşam) manuel seçildiyse:
             // Bu en öncelikli kontroldür, araç eşleşmesinin önüne geçer.
             if ($trip->morning_driver_id) {
                 // Manuel sabah şoförü atanmış: sadece O şoför sürmüş sayılır
                 $driverDroveMorning = ((int)$trip->morning_driver_id === (int)$driver->id);
-            } elseif ($effectiveVehicleId && $effectiveMorningVehicleOnTrip) {
-                // Manuel atama yoksa, araç eşleşmesine bak
-                $driverDroveMorning = ((int)$effectiveMorningVehicleOnTrip === (int)$effectiveVehicleId);
+            } elseif ($vehicleIdOnTripDate && $effectiveMorningVehicleOnTrip) {
+                // Manuel atama yoksa, o güne ait araç eşleşmesine bak
+                $driverDroveMorning = ((int)$effectiveMorningVehicleOnTrip === (int)$vehicleIdOnTripDate);
             }
             
             if ($trip->evening_driver_id) {
                 // Manuel akşam şoförü atanmış: sadece O şoför sürmüş sayılır
                 $driverDroveEvening = ((int)$trip->evening_driver_id === (int)$driver->id);
-            } elseif ($effectiveVehicleId && $effectiveEveningVehicleOnTrip) {
-                // Manuel atama yoksa, araç eşleşmesine bak
-                $driverDroveEvening = ((int)$effectiveEveningVehicleOnTrip === (int)$effectiveVehicleId);
+            } elseif ($vehicleIdOnTripDate && $effectiveEveningVehicleOnTrip) {
+                // Manuel atama yoksa, o güne ait araç eşleşmesine bak
+                $driverDroveEvening = ((int)$effectiveEveningVehicleOnTrip === (int)$vehicleIdOnTripDate);
             }
 
             if (!$driverDroveMorning) $canDoMorning = false;
@@ -250,13 +250,127 @@ class PayrollService
         $baseSalary = (float)($driver->base_salary ?? 0);
         $actualBaseSalary = round(($baseSalary / 30) * $workDays, 2);
 
+        // Araç geçmişi bilgisini rapora ekle
+        $vehicleHistory = $this->buildVehicleHistoryForReport($driver, $startDate, $endDate, $assignmentHistory);
+
         return [
             'base_salary' => $actualBaseSalary,
             'original_base_salary' => $baseSalary,
             'work_days' => $workDays,
             'extra_earnings' => $totalExtraEarnings,
             'net_salary' => round($actualBaseSalary + $totalExtraEarnings, 2),
-            'details' => array_values($groupedDetails)
+            'details' => array_values($groupedDetails),
+            'vehicle_history' => $vehicleHistory,
         ];
+    }
+
+    /**
+     * Şoförün bir dönemdeki tüm araç ID'lerini zimmet geçmişinden çöz.
+     * Zimmet geçmişi yoksa mevcut vehicle_id'ye ve son trip'e fall back eder.
+     *
+     * @return array<int>
+     */
+    private function resolveVehicleIdsForPeriod(Driver $driver, Carbon $startDate, Carbon $endDate): array
+    {
+        // Zimmet geçmişi tablosundan o dönemdeki tüm araçları bul
+        $assignments = DriverVehicleAssignment::withoutGlobalScopes()
+            ->where('driver_id', $driver->id)
+            ->activeInRange($startDate, $endDate)
+            ->pluck('vehicle_id')
+            ->unique()
+            ->all();
+
+        if (!empty($assignments)) {
+            return $assignments;
+        }
+
+        // Fallback: Zimmet geçmişi yoksa mevcut vehicle_id
+        $vehicleIds = [];
+        if ($driver->vehicle_id) {
+            $vehicleIds[] = $driver->vehicle_id;
+        }
+
+        // Hala yoksa son trip'ten bulmaya çalış
+        if (empty($vehicleIds)) {
+            $lastTrip = Trip::where('driver_id', $driver->id)
+                ->whereNotNull('vehicle_id')
+                ->orderBy('trip_date', 'desc')
+                ->first();
+            if ($lastTrip) {
+                $vehicleIds[] = $lastTrip->vehicle_id;
+            }
+        }
+
+        return $vehicleIds;
+    }
+
+    /**
+     * Belirli bir tarihte şoförün hangi araçta olduğunu zimmet geçmişinden çöz.
+     * Performans için önceden yüklenmiş assignment collection'ı kullanır.
+     */
+    private function resolveVehicleIdOnDate(Driver $driver, Carbon $date, $assignmentHistory): ?int
+    {
+        $dateStr = $date->toDateString();
+
+        // Önbelleğe alınmış zimmet geçmişinden bul
+        foreach ($assignmentHistory as $assignment) {
+            $assignedStr = $assignment->assigned_at->toDateString();
+            $unassignedStr = $assignment->unassigned_at ? $assignment->unassigned_at->toDateString() : null;
+
+            if ($assignedStr <= $dateStr && ($unassignedStr === null || $unassignedStr >= $dateStr)) {
+                return $assignment->vehicle_id;
+            }
+        }
+
+        // Fallback: Zimmet geçmişi yoksa mevcut vehicle_id
+        return $driver->vehicle_id;
+    }
+
+    /**
+     * Maaş raporu için araç geçmişi bilgisi oluştur.
+     * "42 C 0123 → 01.06-15.06 (15 gün)" formatında.
+     */
+    private function buildVehicleHistoryForReport(Driver $driver, Carbon $startDate, Carbon $endDate, $assignmentHistory): array
+    {
+        $history = [];
+
+        if ($assignmentHistory->isEmpty()) {
+            // Zimmet geçmişi yoksa mevcut aracı göster
+            if ($driver->vehicle_id) {
+                $vehicle = \App\Models\Fleet\Vehicle::withoutGlobalScopes()->find($driver->vehicle_id);
+                if ($vehicle) {
+                    $history[] = [
+                        'vehicle_plate' => $vehicle->plate,
+                        'vehicle_id' => $vehicle->id,
+                        'start' => $startDate->format('d.m.Y'),
+                        'end' => $endDate->format('d.m.Y'),
+                        'days' => 'Tüm ay',
+                    ];
+                }
+            }
+            return $history;
+        }
+
+        foreach ($assignmentHistory as $assignment) {
+            $vehicle = \App\Models\Fleet\Vehicle::withoutGlobalScopes()->find($assignment->vehicle_id);
+            if (!$vehicle) continue;
+
+            $aStart = $assignment->assigned_at->gt($startDate) ? $assignment->assigned_at : $startDate;
+            $aEnd = $assignment->unassigned_at
+                ? ($assignment->unassigned_at->lt($endDate) ? $assignment->unassigned_at : $endDate)
+                : $endDate;
+
+            $dayCount = $aStart->diffInDays($aEnd) + 1;
+
+            $history[] = [
+                'vehicle_plate' => $vehicle->plate,
+                'vehicle_id' => $vehicle->id,
+                'start' => $aStart->format('d.m.Y'),
+                'end' => $aEnd->format('d.m.Y'),
+                'days' => $dayCount . ' gün',
+            ];
+        }
+
+        return $history;
     }
 }

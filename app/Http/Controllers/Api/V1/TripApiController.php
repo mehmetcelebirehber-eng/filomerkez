@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Models\Trip;
 use App\Models\Customer;
 use App\Models\CustomerServiceRoute;
+use App\Models\DriverVehicleAssignment;
+use App\Models\Fleet\Driver;
 use App\Models\Fleet\Vehicle;
 use App\Models\User;
 use Carbon\Carbon;
@@ -267,14 +269,34 @@ class TripApiController extends BaseApiController
 
                         $formatDriver = function ($vehicle, $date) {
                             if (!$vehicle) return '';
-                            $targetDate = $date->startOfDay();
-                            $driver = $vehicle->drivers->filter(function($d) use ($targetDate) {
-                                $start = $d->start_date ? Carbon::parse($d->start_date)->startOfDay() : null;
-                                $leave = $d->leave_date ? Carbon::parse($d->leave_date)->startOfDay() : null;
-                                if ($start && $targetDate->lt($start)) return false;
-                                if ($leave && $targetDate->gt($leave)) return false;
-                                return true;
-                            })->first();
+                            $targetDate = $date instanceof Carbon ? $date->startOfDay() : Carbon::parse($date)->startOfDay();
+                            $dateStr = $targetDate->toDateString();
+
+                            // Zimmet geçmişi tablosundan o tarihte bu araca atanmış şoförü bul
+                            $assignment = DriverVehicleAssignment::withoutGlobalScopes()
+                                ->where('vehicle_id', $vehicle->id)
+                                ->where('assigned_at', '<=', $dateStr)
+                                ->where(function ($q) use ($dateStr) {
+                                    $q->whereNull('unassigned_at')
+                                      ->orWhere('unassigned_at', '>=', $dateStr);
+                                })
+                                ->first();
+
+                            $driver = null;
+                            if ($assignment) {
+                                $driver = Driver::withoutGlobalScopes()->find($assignment->driver_id);
+                            }
+
+                            if (!$driver) {
+                                // Fallback: Zimmet geçmişi yoksa eski yöntemle bul
+                                $driver = $vehicle->drivers->filter(function($d) use ($targetDate) {
+                                    $start = $d->start_date ? Carbon::parse($d->start_date)->startOfDay() : null;
+                                    $leave = $d->leave_date ? Carbon::parse($d->leave_date)->startOfDay() : null;
+                                    if ($start && $targetDate->lt($start)) return false;
+                                    if ($leave && $targetDate->gt($leave)) return false;
+                                    return true;
+                                })->first();
+                            }
 
                             if (!$driver) return '';
                             $parts = explode(' ', trim($driver->full_name ?? $driver->name));
@@ -616,7 +638,24 @@ class TripApiController extends BaseApiController
     private function resolveVehicleDriverId($vehicleId, Carbon $date)
     {
         if (!$vehicleId) return null;
-        $vehicle = \App\Models\Fleet\Vehicle::with('drivers')->find($vehicleId);
+        $dateStr = $date->toDateString();
+
+        // Önce zimmet geçmişi tablosundan bak
+        $assignment = DriverVehicleAssignment::withoutGlobalScopes()
+            ->where('vehicle_id', $vehicleId)
+            ->where('assigned_at', '<=', $dateStr)
+            ->where(function ($q) use ($dateStr) {
+                $q->whereNull('unassigned_at')
+                  ->orWhere('unassigned_at', '>=', $dateStr);
+            })
+            ->first();
+
+        if ($assignment) {
+            return $assignment->driver_id;
+        }
+
+        // Fallback: Zimmet geçmişi yoksa eski yöntemle bul
+        $vehicle = Vehicle::with('drivers')->find($vehicleId);
         if (!$vehicle) return null;
         
         $targetDate = $date->startOfDay();

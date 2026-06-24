@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Document;
+use App\Models\DriverVehicleAssignment;
 use App\Models\Fleet\Driver;
 use App\Models\Fleet\Vehicle;
 use Illuminate\Http\Request;
@@ -198,7 +199,18 @@ class DriverController extends Controller
 
         $validated['is_active'] = $request->has('is_active');
 
-        Driver::create($validated);
+        $driver = Driver::create($validated);
+
+        // Araç zimmet geçmişi kaydı oluştur
+        if (!empty($validated['vehicle_id'])) {
+            DriverVehicleAssignment::create([
+                'company_id' => $driver->company_id,
+                'driver_id' => $driver->id,
+                'vehicle_id' => $validated['vehicle_id'],
+                'assigned_at' => $validated['start_date'] ?? now()->toDateString(),
+                'assigned_shift' => $validated['start_shift'] ?? 'morning',
+            ]);
+        }
 
         return redirect()
             ->route('drivers.index')
@@ -546,6 +558,35 @@ class DriverController extends Controller
 
         $validated['is_active'] = $request->has('is_active');
 
+        // Araç değiştiyse zimmet geçmişi kaydet
+        $oldVehicleId = $driver->vehicle_id;
+        $newVehicleId = $validated['vehicle_id'] ?? null;
+
+        if ($oldVehicleId != $newVehicleId) {
+            // Eski zimmeti kapat
+            if ($oldVehicleId) {
+                $activeAssignment = DriverVehicleAssignment::where('driver_id', $driver->id)
+                    ->where('vehicle_id', $oldVehicleId)
+                    ->whereNull('unassigned_at')
+                    ->first();
+
+                if ($activeAssignment) {
+                    $activeAssignment->close(now()->toDateString(), 'full_day');
+                }
+            }
+
+            // Yeni zimmet aç
+            if ($newVehicleId) {
+                DriverVehicleAssignment::create([
+                    'company_id' => $driver->company_id,
+                    'driver_id' => $driver->id,
+                    'vehicle_id' => $newVehicleId,
+                    'assigned_at' => now()->toDateString(),
+                    'assigned_shift' => 'morning',
+                ]);
+            }
+        }
+
         $driver->update($validated);
 
         return redirect()
@@ -572,11 +613,23 @@ class DriverController extends Controller
             'leave_shift' => 'required|string|in:morning,evening,full_day',
         ]);
 
+        // Aktif araç zimmetini kapat
+        $activeAssignment = DriverVehicleAssignment::where('driver_id', $driver->id)
+            ->whereNull('unassigned_at')
+            ->first();
+
+        if ($activeAssignment) {
+            $activeAssignment->close(
+                $validated['leave_date'],
+                $validated['leave_shift']
+            );
+        }
+
         $driver->update([
             'is_active' => false,
             'leave_date' => $validated['leave_date'],
             'leave_shift' => $validated['leave_shift'],
-            // 'vehicle_id' => null, // Artık aracı boşa çıkarmıyoruz ki geçmiş maaş hesaplanabilsin
+            // vehicle_id'yi silmiyoruz — geriye uyumluluk ve fallback için tutuluyor
         ]);
 
         return redirect()->back()->with('success', 'Personel işten ayrılma kaydı başarıyla yapıldı.');
@@ -586,13 +639,50 @@ class DriverController extends Controller
     {
         $validated = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
+            'assignment_date' => 'nullable|date',
+            'assignment_shift' => 'nullable|string|in:morning,evening,full_day',
         ]);
 
+        $assignmentDate = $validated['assignment_date'] ?? now()->toDateString();
+        $assignmentShift = $validated['assignment_shift'] ?? 'morning';
+        $oldVehicleId = $driver->vehicle_id;
+        $newVehicleId = $validated['vehicle_id'];
+
+        // Aynı araçsa işlem yapma
+        if ((int) $oldVehicleId === (int) $newVehicleId) {
+            return redirect()->back()->with('info', 'Personel zaten bu araca atanmış.');
+        }
+
+        // Eski aktif zimmeti kapat
+        $activeAssignment = DriverVehicleAssignment::where('driver_id', $driver->id)
+            ->whereNull('unassigned_at')
+            ->first();
+
+        if ($activeAssignment) {
+            // Eski zimmeti, yeni zimmetin bir gün öncesinde kapat
+            $closeDate = Carbon::parse($assignmentDate)->subDay()->toDateString();
+            // Eğer kapanış tarihi açılış tarihinden önceyse, açılış tarihini kullan
+            if ($closeDate < $activeAssignment->assigned_at->toDateString()) {
+                $closeDate = $activeAssignment->assigned_at->toDateString();
+            }
+            $activeAssignment->close($closeDate, 'full_day');
+        }
+
+        // Yeni zimmet kaydı oluştur
+        DriverVehicleAssignment::create([
+            'company_id' => $driver->company_id,
+            'driver_id' => $driver->id,
+            'vehicle_id' => $newVehicleId,
+            'assigned_at' => $assignmentDate,
+            'assigned_shift' => $assignmentShift,
+        ]);
+
+        // Geriye uyumluluk: vehicle_id'yi de güncelle
         $driver->update([
-            'vehicle_id' => $validated['vehicle_id'],
+            'vehicle_id' => $newVehicleId,
         ]);
 
-        return redirect()->back()->with('success', 'Personel araç ataması başarıyla güncellendi.');
+        return redirect()->back()->with('success', 'Personel araç ataması başarıyla güncellendi. Zimmet geçmişi kaydedildi.');
     }
 
     public function downloadDocumentsZip(Driver $driver)

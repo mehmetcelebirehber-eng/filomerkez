@@ -6,6 +6,7 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { AuthContext } from '../context/AuthContext';
 import api from '../api/axios';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import dayjs from 'dayjs';
 import 'dayjs/locale/tr';
 
@@ -65,18 +66,52 @@ export default function HomeScreen({ navigation }) {
     };
 
     const KpiCard = ({ icon, title, value, gradientColors, darkColor, isHalf }) => (
-        <View style={[styles.kpi3DBase, { backgroundColor: darkColor }]}>
-            <LinearGradient colors={gradientColors} style={[styles.kpiCard, isHalf && { padding: 18, flexDirection: 'column', alignItems: 'flex-start' }]} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
-                <View style={[styles.kpiIconBox, { shadowColor: darkColor, backgroundColor: 'transparent' }, isHalf && { width: 46, height: 46, borderRadius: 14, marginBottom: 12, marginRight: 0 }]}>
-                    <Image source={{ uri: get3DIcon(icon) }} style={{ width: isHalf ? 36 : 48, height: isHalf ? 36 : 48 }} resizeMode="contain" />
-                </View>
-                <View style={[styles.kpiInfo, isHalf && { width: '100%' }]}>
-                    <Text style={[styles.kpiValue, isHalf && { fontSize: 28 }]} adjustsFontSizeToFit numberOfLines={1}>{value !== undefined ? value : '-'}</Text>
-                    <Text style={[styles.kpiTitle, isHalf && { fontSize: 13 }]} adjustsFontSizeToFit numberOfLines={1}>{title}</Text>
-                </View>
-            </LinearGradient>
+        <View style={[styles.kpi3DBase, { shadowColor: darkColor }]}>
+            <BlurView intensity={30} tint="dark" style={{ borderRadius: 28, overflow: 'hidden' }}>
+                <LinearGradient colors={[gradientColors[0] + '90', gradientColors[1] + '50']} style={[styles.kpiCard, isHalf && { padding: 18, flexDirection: 'column', alignItems: 'flex-start' }]} start={{x: 0, y: 0}} end={{x: 1, y: 1}}>
+                    <View style={[styles.kpiIconBox, { shadowColor: darkColor, backgroundColor: 'rgba(255,255,255,0.1)' }, isHalf && { width: 46, height: 46, borderRadius: 14, marginBottom: 12, marginRight: 0 }]}>
+                        <Image source={{ uri: get3DIcon(icon) }} style={{ width: isHalf ? 36 : 48, height: isHalf ? 36 : 48 }} resizeMode="contain" />
+                    </View>
+                    <View style={[styles.kpiInfo, isHalf && { width: '100%' }]}>
+                        <Text style={[styles.kpiValue, isHalf && { fontSize: 28 }]} adjustsFontSizeToFit numberOfLines={1}>{value !== undefined ? value : '-'}</Text>
+                        <Text style={[styles.kpiTitle, isHalf && { fontSize: 13 }]} adjustsFontSizeToFit numberOfLines={1}>{title}</Text>
+                    </View>
+                </LinearGradient>
+            </BlurView>
         </View>
     );
+
+    const QuickActions = () => {
+        const actions = [
+            { id: 1, title: 'Yeni Şoför', icon: 'account-plus', color: '#8B5CF6', route: 'Personnel' },
+            { id: 2, title: 'Yeni Araç', icon: 'car-side', color: '#3B82F6', route: 'VehiclesTab' },
+            { id: 3, title: 'Seferler', icon: 'map-marker-path', color: '#10B981', route: 'Trips' },
+            { id: 4, title: 'Maaşlar', icon: 'cash-multiple', color: '#F59E0B', route: 'Payroll' },
+        ];
+
+        return (
+            <View style={{ marginBottom: 30 }}>
+                <Text style={styles.sectionTitle}>Hızlı İşlemler</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 16 }}>
+                    {actions.map(action => (
+                        <TouchableOpacity 
+                            key={action.id} 
+                            style={styles.quickActionCard}
+                            activeOpacity={0.7}
+                            onPress={() => navigation.navigate(action.route)}
+                        >
+                            <BlurView intensity={20} tint="light" style={styles.quickActionBlur}>
+                                <View style={[styles.quickActionIconBox, { backgroundColor: action.color + '25' }]}>
+                                    <Icon name={action.icon} size={26} color={action.color} />
+                                </View>
+                                <Text style={styles.quickActionTitle}>{action.title}</Text>
+                            </BlurView>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+            </View>
+        );
+    };
 
     const renderMaintenanceHealth = () => {
         if (!stats?.maintenance_health || stats.maintenance_health.length === 0) {
@@ -91,6 +126,7 @@ export default function HomeScreen({ navigation }) {
 
         return stats.maintenance_health.map((mh, i) => (
             <View key={i} style={styles.mhCard}>
+                <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFillObject} />
                 <LinearGradient colors={['rgba(255,255,255,0.05)', 'transparent']} style={StyleSheet.absoluteFillObject} />
                 <View style={styles.mhHeader}>
                     <View style={styles.mhHeaderLeft}>
@@ -157,6 +193,9 @@ export default function HomeScreen({ navigation }) {
                     {stats ? (
                         <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
                             
+                            {/* Hızlı İşlemler */}
+                            <QuickActions />
+
                             {/* KPI Grid */}
                             <Text style={styles.sectionTitle}>Filo Özeti</Text>
                             <View style={styles.kpiContainer}>
@@ -212,15 +251,20 @@ const styles = StyleSheet.create({
 
     kpiContainer: { gap: 12 },
     kpiRow: { flexDirection: 'row' },
-    kpi3DBase: { borderRadius: 28, paddingBottom: 8, paddingRight: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowopacity: 1, shadowRadius: 15, elevation: 12, marginBottom: 8 },
-    kpiCard: { padding: 22, flexDirection: 'row', alignItems: 'center', borderRadius: 28, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-    kpiIconBox: { width: 60, height: 60, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', marginRight: 16, shadowOffset: { width: 0, height: 4 }, shadowopacity: 1, shadowRadius: 6, elevation: 4 },
+    kpi3DBase: { borderRadius: 28, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.8, shadowRadius: 15, elevation: 12, marginBottom: 8 },
+    kpiCard: { padding: 22, flexDirection: 'row', alignItems: 'center', borderRadius: 28, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+    kpiIconBox: { width: 60, height: 60, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginRight: 16, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 1, shadowRadius: 6, elevation: 4 },
     kpiInfo: { flex: 1 },
-    kpiValue: { fontSize: 36, fontWeight: '900', color: '#FFF', letterSpacing: -1, marginBottom: 2, textShadowColor: 'rgba(0,0,0,0.3)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
-    kpiTitle: { fontSize: 14, fontWeight: '700', color: 'rgba(255,255,255,0.9)', letterSpacing: 0.5 },
+    kpiValue: { fontSize: 36, fontWeight: '900', color: '#FFF', letterSpacing: -1, marginBottom: 2, textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8 },
+    kpiTitle: { fontSize: 14, fontWeight: '700', color: 'rgba(255,255,255,0.8)', letterSpacing: 0.5 },
+
+    quickActionCard: { width: 105, height: 115, borderRadius: 24, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+    quickActionBlur: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 10, backgroundColor: 'rgba(255,255,255,0.03)' },
+    quickActionIconBox: { width: 54, height: 54, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+    quickActionTitle: { color: '#F8FAFC', fontSize: 13, fontWeight: '700' },
 
     mhContainer: { gap: 16 },
-    mhCard: { backgroundColor: '#0F172A', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#1E293B', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowopacity: 1, shadowRadius: 12, elevation: 8, overflow: 'hidden' },
+    mhCard: { backgroundColor: 'transparent', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 1, shadowRadius: 12, elevation: 8, overflow: 'hidden' },
     mhHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
     mhHeaderLeft: { flex: 1 },
     mhPlateBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(59, 130, 246, 0.15)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, alignSelf: 'flex-start', marginBottom: 8, borderWidth: 1, borderColor: 'rgba(59, 130, 246, 0.3)' },

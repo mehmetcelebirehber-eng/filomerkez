@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Dimensions, Animated, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Dimensions, Animated, ScrollView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
@@ -59,7 +59,7 @@ export default function TrackingScreen({ navigation }) {
     const fetchLiveLocations = async (showLoading = true) => {
         if (showLoading) setLoading(true);
         try {
-            const res = await axios.get('/api/v1/vehicle-tracking/live');
+            const res = await axios.get('/v1/vehicle-tracking/live');
             if (res.data.success) {
                 // Objeden diziye çevir (Arvento formatında obje gelebilir)
                 const dataObj = res.data.vehicles || {};
@@ -81,6 +81,7 @@ export default function TrackingScreen({ navigation }) {
             }
         } catch (error) {
             console.error("Araç takip verisi çekilemedi:", error);
+            alert("Veri çekilemedi: " + (error.response?.data?.message || error.message));
         } finally {
             if (showLoading) setLoading(false);
         }

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useContext } from 'react';
-import { View, Text, StyleSheet, Animated, Easing, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Animated, Easing, Dimensions, Image } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 import SpaceWaves from '../components/SpaceWaves';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
@@ -68,7 +68,11 @@ export default function LoginTransitionScreen({ onFinish }) {
                 
                 {/* Logo and Icon */}
                 <View style={styles.logoIcon}>
-                    <Text style={{fontSize: 32}}>🚀</Text>
+                    <Image 
+                        source={require('../../assets/icon.png')} 
+                        style={{ width: 140, height: 140, borderRadius: 36 }} 
+                        resizeMode="cover" 
+                    />
                 </View>
 
                 {/* Company Name */}
@@ -109,20 +113,18 @@ const styles = StyleSheet.create({
         marginTop: -50,
     },
     logoIcon: {
-        width: 80,
-        height: 80,
-        backgroundColor: '#1E293B',
-        borderRadius: 24,
+        width: 140,
+        height: 140,
+        backgroundColor: '#020617',
+        borderRadius: 36,
         alignItems: 'center',
         justifyContent: 'center',
-        borderWidth: 1,
-        borderColor: 'rgba(139, 92, 246, 0.4)',
         shadowColor: '#8B5CF6',
-        shadowOffset: { width: 0, height: 4 },
-        shadowopacity: 1,
-        shadowRadius: 15,
-        elevation: 10,
-        marginBottom: 24,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.6,
+        shadowRadius: 20,
+        elevation: 15,
+        marginBottom: 30,
     },
     companyName: {
         fontSize: 28,

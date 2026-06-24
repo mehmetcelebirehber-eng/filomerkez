@@ -1,30 +1,30 @@
 import React, { useContext } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons as Icon } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { AuthContext } from '../context/AuthContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
-const { width } = Dimensions.get('window');
+const getEmojiUrl = (name) => `https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/${name}.png`;
 
 const menuItems = [
-    { id: 1, icon: 'home-outline', label: 'Ana Sayfa', sub: 'GENEL BAKIŞ', color: '#3B82F6', route: 'HomeTab' },
-    { id: 2, icon: 'car-outline', label: 'Araçlar', sub: 'FİLO YÖNETİMİ', color: '#10B981', route: 'VehiclesTab', permission: 'vehicles.view' },
-    { id: 3, icon: 'location-outline', label: 'Araç Takip', sub: 'CANLI İZLEME', color: '#06B6D4', route: 'Tracking', permission: 'vehicles.view' },
-    { id: 4, icon: 'people-outline', label: 'Personeller', sub: 'PERSONEL YÖNETİMİ', color: '#8B5CF6', route: 'Personnel', permission: 'drivers.view' },
-    { id: 5, icon: 'construct-outline', label: 'Bakım / Tamir', sub: 'SERVİS VE BAKIM', color: '#F97316', route: 'Maintenances', permission: 'maintenances.view' },
-    { id: 6, icon: 'water-outline', label: 'Yakıt', sub: 'YAKIT TAKİBİ', color: '#0EA5E9', route: 'VehiclesTab', screen: 'Fuels', permission: 'fuels.view' },
-    { id: 7, icon: 'warning-outline', label: 'Trafik Cezaları', sub: 'YASAL VE UYUMLULUK', color: '#EF4444', route: 'Penalties', permission: 'penalties.view' },
-    { id: 8, icon: 'calendar-outline', label: 'Puantaj / Sefer', sub: 'OPERASYON KAYITLARI', color: '#F59E0B', route: 'Trips', permission: 'trips.view' },
-    { id: 9, icon: 'cash-outline', label: 'Maaşlar', sub: 'FİNANSAL KAYITLAR', color: '#F43F5E', route: 'Payrolls', permission: 'payrolls.view' },
-    { id: 10, icon: 'business-outline', label: 'Müşteriler', sub: 'MÜŞTERİ YÖNETİMİ', color: '#14B8A6', route: 'Customers', permission: 'customers.view' },
-    { id: 17, icon: 'folder-open-outline', label: 'Şirket Evrakları', sub: 'KURUMSAL BELGELER', color: '#8B5CF6', route: 'CompanyDocuments', permission: 'company_documents.view' },
-    { id: 18, icon: 'briefcase-outline', label: 'İhaleler', sub: 'İHALE & SÖZLEŞMELER', color: '#F59E0B', route: 'Tenders', permission: 'tenders.view' },
-    { id: 11, icon: 'pie-chart-outline', label: 'Raporlar', sub: 'ANALİZ MERKEZİ', color: '#38BDF8', route: 'Reports', permission: 'reports.view' },
-    { id: 13, icon: 'time-outline', label: 'Loglar', sub: 'AKTİVİTE KAYITLARI', color: '#94A3B8', route: 'Activity', adminOnly: true },
-    { id: 14, icon: 'people-circle-outline', label: 'Kullanıcılar', sub: 'ERİŞİM KONTROLÜ', color: '#6366F1', route: 'CompanyUsers', adminOnly: true },
-    { id: 15, icon: 'settings-outline', label: 'Ayarlar', sub: 'SİSTEM YAPILANDIRMASI', color: '#CBD5E1', route: 'Settings' },
-    { id: 16, icon: 'bus-outline', label: 'PilotCell', sub: 'ŞOFÖR PANELİ', color: '#8B5CF6', route: 'PilotCellDriver', permission: 'pilotcell.drive' },
+    { id: 1, emoji: 'Travel%20and%20places/House', label: 'Ana Sayfa', sub: 'GENEL BAKIŞ', route: 'HomeTab' },
+    { id: 2, emoji: 'Travel%20and%20places/Oncoming%20Automobile', label: 'Araçlar', sub: 'FİLO YÖNETİMİ', route: 'VehiclesTab', permission: 'vehicles.view' },
+    { id: 3, emoji: 'Travel%20and%20places/Satellite', label: 'Araç Takip', sub: 'CANLI İZLEME', route: 'Tracking', permission: 'vehicles.view' },
+    { id: 4, emoji: 'People/Construction%20Worker', label: 'Personeller', sub: 'PERSONEL YÖNETİMİ', route: 'Personnel', permission: 'drivers.view' },
+    { id: 5, emoji: 'Objects/Hammer%20and%20Wrench', label: 'Bakım / Tamir', sub: 'SERVİS VE BAKIM', route: 'Maintenances', permission: 'maintenances.view' },
+    { id: 6, emoji: 'Travel%20and%20places/Fuel%20Pump', label: 'Yakıt', sub: 'YAKIT TAKİBİ', route: 'VehiclesTab', screen: 'Fuels', permission: 'fuels.view' },
+    { id: 7, emoji: 'Travel%20and%20places/Police%20Car%20Light', label: 'Trafik Cezaları', sub: 'YASAL VE UYUMLULUK', route: 'Penalties', permission: 'penalties.view' },
+    { id: 8, emoji: 'Travel%20and%20places/High-Speed%20Train', label: 'Puantaj / Sefer', sub: 'OPERASYON KAYITLARI', route: 'Trips', permission: 'trips.view' },
+    { id: 9, emoji: 'Objects/Money%20with%20Wings', label: 'Maaşlar', sub: 'FİNANSAL KAYITLAR', route: 'Payrolls', permission: 'payrolls.view' },
+    { id: 20, emoji: 'Objects/Receipt', label: 'Muhasebe / Giderler', sub: 'FİNANS YÖNETİMİ', route: 'Finance', permission: 'expenses.view' },
+    { id: 10, emoji: 'People/Handshake', label: 'Müşteriler', sub: 'MÜŞTERİ YÖNETİMİ', route: 'Customers', permission: 'customers.view' },
+    { id: 17, emoji: 'Objects/File%20Cabinet', label: 'Şirket Evrakları', sub: 'KURUMSAL BELGELER', route: 'CompanyDocuments', permission: 'company_documents.view' },
+    { id: 18, emoji: 'Objects/Open%20Book', label: 'İhaleler', sub: 'İHALE & SÖZLEŞMELER', route: 'Tenders', permission: 'tenders.view' },
+    { id: 11, emoji: 'Objects/Chart%20Increasing', label: 'Raporlar', sub: 'ANALİZ MERKEZİ', route: 'Reports', permission: 'reports.view' },
+    { id: 13, emoji: 'Objects/Stopwatch', label: 'Loglar', sub: 'AKTİVİTE KAYITLARI', route: 'Activity', adminOnly: true },
+    { id: 14, emoji: 'People/People%20Hugging', label: 'Kullanıcılar', sub: 'ERİŞİM KONTROLÜ', route: 'CompanyUsers', adminOnly: true },
+    { id: 15, emoji: 'Objects/Gear', label: 'Ayarlar', sub: 'SİSTEM YAPILANDIRMASI', route: 'Settings' },
+    { id: 16, emoji: 'Travel%20and%20places/Minibus', label: 'PilotCell', sub: 'ŞOFÖR PANELİ', route: 'PilotCellDriver', permission: 'pilotcell.drive' },
 ];
 
 export default function MenuScreen({ navigation }) {
@@ -38,19 +38,24 @@ export default function MenuScreen({ navigation }) {
 
     return (
         <View style={s.container}>
+            <LinearGradient colors={['#0F172A', '#020617']} style={StyleSheet.absoluteFillObject} />
             <SafeAreaView style={{ flex: 1 }}>
+                
+                {/* Custom Logo Header matching Web */}
+                <View style={s.logoHeader}>
+                    <Image source={require('../../assets/icon.png')} style={s.logoImage} />
+                    <Text style={s.companyName}>{userInfo?.company_name?.toUpperCase() || 'FİLOMERKEZ'}</Text>
+                </View>
+
                 <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
                     
-                    <View style={s.header}>
-                        <Text style={s.headerTitle}>Menü</Text>
-                        <Text style={s.headerSub}>Tüm modüllere buradan ulaşın</Text>
-                    </View>
+                    <Text style={s.menuLabel}>ANA MENÜ</Text>
 
-                    <View style={s.grid}>
+                    <View style={s.listContainer}>
                         {visibleItems.map((item, index) => (
                             <TouchableOpacity 
                                 key={item.id} 
-                                style={s.cardWrap} 
+                                style={s.listItem} 
                                 activeOpacity={0.7}
                                 onPress={() => {
                                     if (item.route && item.screen) {
@@ -60,13 +65,15 @@ export default function MenuScreen({ navigation }) {
                                     }
                                 }}
                             >
-                                <LinearGradient colors={['#020617', '#1E1B4B']} style={s.card}>
-                                    <View style={{ alignItems: 'center', justifyContent: 'center', marginBottom: 16, height: 48 }}>
-                                        <Icon name={item.icon} size={42} color={item.color} style={{ textShadowColor: item.color, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 15 }} />
-                                    </View>
-                                    <Text style={s.cardTitle}>{item.label}</Text>
-                                    <Text style={s.cardSub} numberOfLines={1}>{item.sub}</Text>
-                                </LinearGradient>
+                                <View style={s.iconWrap}>
+                                    <Image source={{ uri: getEmojiUrl(item.emoji) }} style={s.emojiIcon} />
+                                </View>
+                                
+                                <View style={s.textWrap}>
+                                    <Text style={s.itemTitle}>{item.label}</Text>
+                                    <Text style={s.itemSub} numberOfLines={1}>{item.sub}</Text>
+                                </View>
+                                
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -79,16 +86,81 @@ export default function MenuScreen({ navigation }) {
 }
 
 const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#FFFFFF' },
-    scrollContent: { paddingHorizontal: 20, paddingTop: 20 },
+    container: { flex: 1, backgroundColor: '#0F172A' },
     
-    header: { marginBottom: 30 },
-    headerTitle: { fontSize: 32, fontWeight: '900', color: '#0F172A', letterSpacing: -1 },
-    headerSub: { fontSize: 14, color: '#64748B', fontWeight: '500', marginTop: 4 },
+    logoHeader: {
+        alignItems: 'center',
+        paddingVertical: 24,
+        paddingHorizontal: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255,255,255,0.05)',
+        marginBottom: 10,
+    },
+    logoImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 20,
+        marginBottom: 12,
+    },
+    companyName: {
+        fontSize: 12,
+        fontWeight: '800',
+        color: '#94A3B8',
+        letterSpacing: 2,
+    },
 
-    grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-    cardWrap: { width: '48%', marginBottom: 16 },
-    card: { padding: 20, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowopacity: 1, shadowRadius: 15, elevation: 8 },
-    cardTitle: { fontSize: 15, fontWeight: '800', color: '#E2E8F0', marginBottom: 4, textAlign: 'center' },
-    cardSub: { fontSize: 11, color: '#64748B', fontWeight: '500', textAlign: 'center' }
+    scrollContent: { paddingHorizontal: 16, paddingTop: 10 },
+    
+    menuLabel: { 
+        fontSize: 12, 
+        color: '#475569', 
+        fontWeight: '800', 
+        letterSpacing: 1.5, 
+        marginBottom: 16,
+        marginLeft: 8 
+    },
+
+    listContainer: {
+        gap: 8,
+    },
+    
+    listItem: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        padding: 12, 
+        borderRadius: 16,
+        backgroundColor: 'transparent',
+    },
+    iconWrap: {
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
+    },
+    emojiIcon: {
+        width: 28,
+        height: 28,
+        resizeMode: 'contain',
+    },
+    textWrap: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    itemTitle: { 
+        fontSize: 16, 
+        fontWeight: '800', 
+        color: '#F8FAFC', 
+        marginBottom: 2 
+    },
+    itemSub: { 
+        fontSize: 10, 
+        color: '#64748B', 
+        fontWeight: '700', 
+        letterSpacing: 0.5 
+    }
 });

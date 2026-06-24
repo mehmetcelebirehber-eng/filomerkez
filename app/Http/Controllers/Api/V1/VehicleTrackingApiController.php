@@ -21,6 +21,25 @@ class VehicleTrackingApiController extends Controller
         if ($setting && $setting->provider === 'arvento') {
             $arvento = new ArventoService($setting);
             $vehicles = $arvento->getVehicleStatus();
+
+            // Arvento'dan gelen verilere sistemimizdeki şoförleri eşleştir
+            $dbVehicles = \App\Models\Fleet\Vehicle::with('driver')
+                ->where('company_id', $companyId)
+                ->get()
+                ->keyBy(function($item) {
+                    // Eşleştirme için plakadaki boşlukları silip büyük harf yapıyoruz
+                    return strtoupper(str_replace(' ', '', $item->license_plate));
+                });
+
+            foreach ($vehicles as &$v) {
+                $plateClean = strtoupper(str_replace(' ', '', $v['LicensePlate'] ?? ''));
+                if (isset($dbVehicles[$plateClean]) && $dbVehicles[$plateClean]->driver) {
+                    $driver = $dbVehicles[$plateClean]->driver;
+                    $v['Driver'] = trim($driver->first_name . ' ' . $driver->last_name);
+                } else {
+                    $v['Driver'] = 'Bilinmiyor';
+                }
+            }
         }
 
         // Eğer sistemde araç dönmüyorsa (test hesabı veya boş API) tasarımı görebilmek için Demo (Fake) veri bas:

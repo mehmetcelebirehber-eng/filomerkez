@@ -216,6 +216,9 @@ Route::prefix('v1')->middleware(['auth:sanctum', \App\Http\Middleware\CheckCompa
     
     Route::get('/vehicles/{id}/reports', [\App\Http\Controllers\Api\V1\VehicleApiController::class, 'reports']);
 
+    // Vehicle Tracking
+    Route::get('/vehicle-tracking/live', [\App\Http\Controllers\Api\V1\VehicleTrackingApiController::class, 'live']);
+
     // Company Users
     Route::get('/company-users', [\App\Http\Controllers\Api\V1\CompanyUserApiController::class, 'index']);
     Route::get('/company-users/options', [\App\Http\Controllers\Api\V1\CompanyUserApiController::class, 'options']);

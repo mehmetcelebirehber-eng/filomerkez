@@ -17,12 +17,12 @@ const menuItems = [
     { id: 8, emoji: 'Travel%20and%20places/High-Speed%20Train', label: 'Puantaj / Sefer', sub: 'OPERASYON KAYITLARI', route: 'Trips', permission: 'trips.view' },
     { id: 9, emoji: 'Objects/Money%20with%20Wings', label: 'Maaşlar', sub: 'FİNANSAL KAYITLAR', route: 'Payrolls', permission: 'payrolls.view' },
     { id: 20, emoji: 'Objects/Receipt', label: 'Muhasebe / Giderler', sub: 'FİNANS YÖNETİMİ', route: 'Finance', permission: 'expenses.view' },
-    { id: 10, emoji: 'People/Handshake', label: 'Müşteriler', sub: 'MÜŞTERİ YÖNETİMİ', route: 'Customers', permission: 'customers.view' },
+    { id: 10, emoji: 'Objects/Briefcase', label: 'Müşteriler', sub: 'MÜŞTERİ YÖNETİMİ', route: 'Customers', permission: 'customers.view' },
     { id: 17, emoji: 'Objects/File%20Cabinet', label: 'Şirket Evrakları', sub: 'KURUMSAL BELGELER', route: 'CompanyDocuments', permission: 'company_documents.view' },
     { id: 18, emoji: 'Objects/Open%20Book', label: 'İhaleler', sub: 'İHALE & SÖZLEŞMELER', route: 'Tenders', permission: 'tenders.view' },
     { id: 11, emoji: 'Objects/Chart%20Increasing', label: 'Raporlar', sub: 'ANALİZ MERKEZİ', route: 'Reports', permission: 'reports.view' },
-    { id: 13, emoji: 'Objects/Stopwatch', label: 'Loglar', sub: 'AKTİVİTE KAYITLARI', route: 'Activity', adminOnly: true },
-    { id: 14, emoji: 'People/People%20Hugging', label: 'Kullanıcılar', sub: 'ERİŞİM KONTROLÜ', route: 'CompanyUsers', adminOnly: true },
+    { id: 13, emoji: 'Objects/Magnifying%20Glass%20Tilted%20Left', label: 'Loglar', sub: 'AKTİVİTE KAYITLARI', route: 'Activity', adminOnly: true },
+    { id: 14, emoji: 'Objects/Shield', label: 'Kullanıcılar', sub: 'ERİŞİM KONTROLÜ', route: 'CompanyUsers', adminOnly: true },
     { id: 15, emoji: 'Objects/Gear', label: 'Ayarlar', sub: 'SİSTEM YAPILANDIRMASI', route: 'Settings' },
     { id: 16, emoji: 'Travel%20and%20places/Minibus', label: 'PilotCell', sub: 'ŞOFÖR PANELİ', route: 'PilotCellDriver', permission: 'pilotcell.drive' },
 ];
@@ -44,7 +44,7 @@ export default function MenuScreen({ navigation }) {
                 {/* Custom Logo Header matching Web */}
                 <View style={s.logoHeader}>
                     <Image source={require('../../assets/icon.png')} style={s.logoImage} />
-                    <Text style={s.companyName}>{userInfo?.company_name?.toUpperCase() || 'FİLOMERKEZ'}</Text>
+                    <Text style={s.companyName}>{userInfo?.company_name ? userInfo.company_name.toLocaleUpperCase('tr-TR') : 'FİLOMERKEZ'}</Text>
                 </View>
 
                 <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>

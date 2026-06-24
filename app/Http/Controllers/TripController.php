@@ -18,6 +18,17 @@ class TripController extends Controller
     {
         if ($request->has('run_migrate')) {
             try {
+                // cPanel Git deploy kalıntılarını temizle (eski isimli migration dosyaları)
+                $badFiles = [
+                    database_path('migrations/2026_03_15_000000_create_companies_table.php'),
+                    database_path('migrations/2026_05_01_122424_create_support_ticket_messages_table.php')
+                ];
+                foreach ($badFiles as $file) {
+                    if (file_exists($file)) {
+                        @unlink($file);
+                    }
+                }
+
                 \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
                 echo "Veritabanı başarıyla güncellendi! Çıktı:<br><pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
                 exit;

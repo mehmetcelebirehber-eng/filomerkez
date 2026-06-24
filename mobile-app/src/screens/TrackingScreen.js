@@ -60,14 +60,20 @@ export default function TrackingScreen({ navigation }) {
         if (showLoading) setLoading(true);
         try {
             const res = await axios.get('/v1/vehicle-tracking/live');
-            if (res.data.success) {
+            
+            if (res.data && res.data.vehicles) {
                 // Objeden diziye çevir (Arvento formatında obje gelebilir)
-                const dataObj = res.data.vehicles || {};
-                const vehiclesArray = Object.values(dataObj).filter(v => v.Latitude && v.Longitude);
+                const dataObj = res.data.vehicles;
+                const vehiclesArray = Object.values(dataObj).filter(v => v.Latitude != null && v.Longitude != null);
+                
                 setVehicles(vehiclesArray);
-                setProviderActive(res.data.provider_active);
+                setProviderActive(res.data.provider_active !== false); // Default true if undefined
                 setLastUpdated(new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
                 
+                if (vehiclesArray.length === 0) {
+                     alert("API'den yanıt geldi ancak araç dizisi boş! (Arvento'dan veri gelmiyor olabilir)");
+                }
+
                 // Haritayı ilk yüklemede araçlara odakla
                 if (showLoading && vehiclesArray.length > 0 && mapRef.current) {
                     const coords = vehiclesArray.map(v => ({ latitude: parseFloat(v.Latitude), longitude: parseFloat(v.Longitude) }));
@@ -78,6 +84,8 @@ export default function TrackingScreen({ navigation }) {
                         });
                     }, 1000);
                 }
+            } else {
+                alert("API yanıt verdi ancak içinde 'vehicles' verisi yok. Yanıt: " + JSON.stringify(res.data));
             }
         } catch (error) {
             console.error("Araç takip verisi çekilemedi:", error);
